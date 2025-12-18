@@ -1,0 +1,76 @@
+[project]
+name = "comfyui-weirdion"
+version = "0.1.0"
+description = "A structured, type-safe ComfyUI custom node suite"
+authors = [
+    { name = "Ankit Patterson" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "mypy>=1.8.0",
+    "ruff>=0.2.0",
+    "types-pyyaml>=6.0.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "mypy>=1.8.0",
+    "ruff>=0.2.0",
+    "types-pyyaml>=6.0.0",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "ANN", "B", "C4", "SIM"]
+ignore = [
+    "ANN401",  # typing.Any is necessary for ComfyUI interop
+    "UP040",   # TypeAlias is fine, type keyword has issues with Python 3.12
+    "N815",    # ComfyUI uses camelCase widget names (dynamicPrompts, etc.)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["ANN"]
+"__init__.py" = ["N999"]  # Module name dictated by repo name
+
+[tool.mypy]
+python_version = "3.12"
+strict = false  # Start lenient, tighten as we go
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # ComfyUI isn't typed, so we'll be pragmatic
+
+# ComfyUI stubs location (will create if needed)
+mypy_path = "stubs"
+
+[[tool.mypy.overrides]]
+module = "comfy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "nodes.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "folder_paths.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests requiring ComfyUI",
+]
