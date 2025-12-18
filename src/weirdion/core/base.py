@@ -82,15 +82,20 @@ class BaseNode(ABC):
         """
         return cls.get_input_spec()
 
-    @property
-    def RETURN_TYPES(self) -> tuple[ComfyType, ...]:  # noqa: N802
-        """ComfyUI interface property for output types."""
-        return self.get_return_types()
+    # ComfyUI expects RETURN_TYPES as a class attribute (not a method or property)
+    # We need to set this in __init_subclass__ to properly inherit from get_return_types()
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Automatically set RETURN_TYPES and RETURN_NAMES as class attributes when subclass is defined."""
+        super().__init_subclass__(**kwargs)
 
-    @property
-    def RETURN_NAMES(self) -> tuple[str, ...] | None:  # noqa: N802
-        """ComfyUI interface property for output names."""
-        return self.get_return_names()
+        # Only set these if the class implements get_return_types (not abstract)
+        if not getattr(cls.get_return_types, '__isabstractmethod__', False):
+            cls.RETURN_TYPES = cls.get_return_types()
+
+            # Set RETURN_NAMES if defined
+            return_names = cls.get_return_names()
+            if return_names is not None:
+                cls.RETURN_NAMES = return_names
 
     @abstractmethod
     def process(self, **kwargs: Any) -> NodeOutput:
