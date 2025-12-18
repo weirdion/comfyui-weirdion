@@ -1,6 +1,6 @@
-"""Core abstractions for ComfyUI Weirdion nodes."""
+"""Core abstractions for ComfyUI weirdion nodes."""
 
-from .base import BaseNode, LoaderNode, ProcessingNode, UtilityNode
+from .base import BaseNode, LoaderNode, ProcessingNode, PromptingNode, UtilityNode
 from .registry import NodeRegistry, register_node
 
 __all__ = [
@@ -8,6 +8,7 @@ __all__ = [
     "ProcessingNode",
     "UtilityNode",
     "LoaderNode",
+    "PromptingNode",
     "NodeRegistry",
     "register_node",
 ]

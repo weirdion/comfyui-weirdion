@@ -8,7 +8,7 @@ from ...core import UtilityNode, register_node
 from ...types import ComfyType, InputSpec, NodeOutput
 
 
-@register_node(name="WDN_TextCombine", display_name="Text Combine (Weirdion)")
+@register_node(name="weirdion_TextCombine", display_name="Text Combine (weirdion)")
 class TextCombineNode(UtilityNode):
     """
     Combines multiple text inputs with a separator.

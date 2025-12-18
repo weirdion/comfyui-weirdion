@@ -1,4 +1,4 @@
-"""Type definitions for ComfyUI Weirdion."""
+"""Type definitions for ComfyUI weirdion."""
 
 from .comfy_types import (
     VAE,

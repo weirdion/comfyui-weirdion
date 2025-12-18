@@ -1,5 +1,5 @@
 """
-Pytest configuration and fixtures for ComfyUI Weirdion tests.
+Pytest configuration and fixtures for ComfyUI weirdion tests.
 """
 
 import pytest

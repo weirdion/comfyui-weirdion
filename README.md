@@ -1,4 +1,4 @@
-# ComfyUI Weirdion
+# ComfyUI weirdion
 
 A structured, type-safe custom node suite for ComfyUI.
 
@@ -87,7 +87,7 @@ from weirdion.core import UtilityNode, register_node
 from weirdion.types import ComfyType, InputSpec, NodeOutput
 
 
-@register_node(name="WDN_MyNode", display_name="My Node (Weirdion)")
+@register_node(name="WDN_MyNode", display_name="My Node (weirdion)")
 class MyNode(UtilityNode):
     """Brief description of what this node does."""
 

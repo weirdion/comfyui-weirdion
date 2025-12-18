@@ -1,5 +1,5 @@
 """
-ComfyUI Weirdion custom nodes entrypoint.
+ComfyUI weirdion custom nodes entrypoint.
 
 This file is imported by ComfyUI when loading custom nodes.
 """

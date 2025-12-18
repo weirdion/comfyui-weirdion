@@ -1,7 +1,7 @@
 .PHONY: help setup test lint format type-check clean dev-install checks
 
 help:
-	@echo "ComfyUI Weirdion - Development Commands"
+	@echo "ComfyUI weirdion - Development Commands"
 	@echo ""
 	@echo "Setup:"
 	@echo "  make setup        - Install dependencies with uv"

@@ -1,1 +1,1 @@
-"""Unit tests for ComfyUI Weirdion."""
+"""Unit tests for ComfyUI weirdion."""

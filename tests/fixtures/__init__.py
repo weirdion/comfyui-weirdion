@@ -1,1 +1,1 @@
-"""Test fixtures for ComfyUI Weirdion."""
+"""Test fixtures for ComfyUI weirdion."""

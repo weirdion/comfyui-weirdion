@@ -133,3 +133,13 @@ class LoaderNode(BaseNode):
     """
 
     CATEGORY: ClassVar[str] = "weirdion/loaders"
+
+
+class PromptingNode(BaseNode):
+    """
+    Base class for prompting nodes (text encoding, LoRA management).
+
+    Use this for nodes that handle text prompts and conditioning.
+    """
+
+    CATEGORY: ClassVar[str] = "weirdion/prompting"

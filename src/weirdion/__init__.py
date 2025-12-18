@@ -1,5 +1,5 @@
 """
-ComfyUI Weirdion - Structured Custom Node Suite
+ComfyUI weirdion - Structured Custom Node Suite
 
 A type-safe, well-tested collection of ComfyUI custom nodes.
 """

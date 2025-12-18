@@ -1,6 +1,6 @@
-"""ComfyUI Weirdion custom nodes."""
+"""ComfyUI weirdion custom nodes."""
 
 # Import all node modules to trigger registration
-from . import utilities
+from . import prompting, utilities
 
-__all__ = ["utilities"]
+__all__ = ["prompting", "utilities"]

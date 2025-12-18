@@ -1,1 +1,1 @@
-"""Integration tests for ComfyUI Weirdion."""
+"""Integration tests for ComfyUI weirdion."""
