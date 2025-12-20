@@ -20,8 +20,8 @@ app.registerExtension({
 
                 // Find the widgets
                 const promptWidget = this.widgets.find(w => w.name === "prompt");
-                const loraWidget = this.widgets.find(w => w.name === "insert_lora");
-                const embeddingWidget = this.widgets.find(w => w.name === "insert_embedding");
+                const loraWidget = this.widgets.find(w => w.name === "lora");
+                const embeddingWidget = this.widgets.find(w => w.name === "embedding");
 
                 if (!promptWidget || !loraWidget || !embeddingWidget) {
                     console.error("[weirdion] Could not find required widgets");
@@ -31,7 +31,7 @@ app.registerExtension({
                 // Store original callback for LoRA dropdown
                 const originalLoraCallback = loraWidget.callback;
                 loraWidget.callback = function(value) {
-                    if (value && value !== "CHOOSE") {
+                    if (value && value !== "Insert LoRA") {
                         // Get current cursor position or append to end
                         const currentText = promptWidget.value || "";
                         const loraTag = `<lora:${value}:1.0>`;
@@ -42,7 +42,7 @@ app.registerExtension({
                         promptWidget.value = newText;
 
                         // Reset dropdown to CHOOSE
-                        loraWidget.value = "CHOOSE";
+                        loraWidget.value = "Insert LoRA";
                     }
 
                     // Call original callback if it exists
@@ -54,7 +54,7 @@ app.registerExtension({
                 // Store original callback for embedding dropdown
                 const originalEmbeddingCallback = embeddingWidget.callback;
                 embeddingWidget.callback = function(value) {
-                    if (value && value !== "CHOOSE") {
+                    if (value && value !== "Insert Embedding") {
                         // Get current cursor position or append to end
                         const currentText = promptWidget.value || "";
                         const embeddingTag = `embedding:${value}`;
@@ -65,7 +65,7 @@ app.registerExtension({
                         promptWidget.value = newText;
 
                         // Reset dropdown to CHOOSE
-                        embeddingWidget.value = "CHOOSE";
+                        embeddingWidget.value = "Insert Embedding";
                     }
 
                     // Call original callback if it exists

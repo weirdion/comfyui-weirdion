@@ -31,15 +31,15 @@ class PromptWithEmbeddingNode(PromptingNode):
             import folder_paths
 
             embedding_list = folder_paths.get_filename_list("embeddings")
-            embedding_choices = ["CHOOSE"] + [name.rsplit(".", 1)[0] for name in embedding_list]
+            embedding_choices = ["Insert Embedding"] + [name.rsplit(".", 1)[0] for name in embedding_list]
         except Exception:
             # Fallback if ComfyUI imports fail (e.g., during testing)
-            embedding_choices = ["CHOOSE"]
+            embedding_choices = ["Insert Embedding"]
 
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                "insert_embedding": (embedding_choices,),
+                "embedding": (embedding_choices,),
             },
             "optional": {
                 "opt_clip": ("CLIP",),
@@ -59,7 +59,7 @@ class PromptWithEmbeddingNode(PromptingNode):
     def process(
         self,
         prompt: str,
-        insert_embedding: str,
+        embedding: str,
         opt_clip: Any | None = None,
     ) -> NodeOutput:
         """

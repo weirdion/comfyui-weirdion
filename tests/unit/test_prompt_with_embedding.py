@@ -15,7 +15,7 @@ def test_prompt_with_embedding_input_spec() -> None:
 
     assert "required" in spec
     assert "prompt" in spec["required"]
-    assert "insert_embedding" in spec["required"]
+    assert "embedding" in spec["required"]
 
     assert "optional" in spec
     assert "opt_clip" in spec["optional"]
@@ -47,7 +47,7 @@ def test_prompt_with_embedding_text_only_mode() -> None:
 
     conditioning, text = node.process(
         prompt=prompt,
-        insert_embedding="CHOOSE",
+        embedding="Insert Embedding",
     )
 
     assert conditioning is None
@@ -61,7 +61,7 @@ def test_prompt_with_embedding_preserves_tags() -> None:
 
     conditioning, text = node.process(
         prompt=prompt,
-        insert_embedding="CHOOSE",
+        embedding="Insert Embedding",
     )
 
     assert text == prompt

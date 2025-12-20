@@ -8,7 +8,7 @@ def test_load_checkpoint_input_spec() -> None:
     spec = LoadCheckpointNode.get_input_spec()
 
     assert "required" in spec
-    assert "ckpt_name" in spec["required"]
+    assert "checkpoint" in spec["required"]
 
     assert "optional" in spec
     assert "opt_clip" in spec["optional"]

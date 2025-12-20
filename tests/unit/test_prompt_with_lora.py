@@ -15,8 +15,8 @@ def test_prompt_with_lora_input_spec() -> None:
 
     assert "required" in spec
     assert "prompt" in spec["required"]
-    assert "insert_lora" in spec["required"]
-    assert "insert_embedding" in spec["required"]
+    assert "lora" in spec["required"]
+    assert "embedding" in spec["required"]
 
     assert "optional" in spec
     assert "opt_model" in spec["optional"]
@@ -49,8 +49,8 @@ def test_prompt_with_lora_text_only_mode() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",
-        insert_embedding="CHOOSE",
+        lora="Insert LoRA",
+        embedding="Insert Embedding",
     )
 
     assert model is None
@@ -66,8 +66,8 @@ def test_prompt_with_lora_preserves_tags() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",
-        insert_embedding="CHOOSE",
+        lora="Insert LoRA",
+        embedding="Insert Embedding",
     )
 
     assert text == prompt
@@ -82,8 +82,8 @@ def test_prompt_with_lora_dropdown_insertion() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",  # JS resets this after insertion
-        insert_embedding="CHOOSE",
+        lora="Insert LoRA",  # JS resets this after insertion
+        embedding="Insert Embedding",
     )
 
     assert text == "a girl, <lora:my-style:1.0>"
@@ -98,8 +98,8 @@ def test_prompt_with_lora_embedding_insertion() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",
-        insert_embedding="CHOOSE",  # JS resets this after insertion
+        lora="Insert LoRA",
+        embedding="Insert Embedding",  # JS resets this after insertion
     )
 
     assert text == "a girl, embedding:my-embedding"
@@ -114,8 +114,8 @@ def test_prompt_with_lora_lora_and_embedding_insertion() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",  # JS resets this after insertion
-        insert_embedding="CHOOSE",  # JS resets this after insertion
+        lora="Insert LoRA",  # JS resets this after insertion
+        embedding="Insert Embedding",  # JS resets this after insertion
     )
 
     assert text == "a girl, <lora:my-style:1.0>, embedding:my-embedding"
@@ -130,8 +130,8 @@ def test_prompt_with_lora_multiple_tags() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",
-        insert_embedding="CHOOSE",
+        lora="Insert LoRA",
+        embedding="Insert Embedding",
     )
 
     assert text == prompt
@@ -146,8 +146,8 @@ def test_prompt_with_lora_high_strength() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",
-        insert_embedding="CHOOSE",
+        lora="Insert LoRA",
+        embedding="Insert Embedding",
     )
 
     assert text == prompt
@@ -161,8 +161,8 @@ def test_prompt_with_lora_negative_strength() -> None:
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="CHOOSE",
-        insert_embedding="CHOOSE",
+        lora="Insert LoRA",
+        embedding="Insert Embedding",
     )
 
     assert text == prompt

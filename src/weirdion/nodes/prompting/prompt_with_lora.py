@@ -39,19 +39,19 @@ class PromptWithLoraNode(PromptingNode):
 
             lora_list = folder_paths.get_filename_list("loras")
             # Strip extensions for cleaner display
-            lora_choices = ["CHOOSE"] + [name.rsplit(".", 1)[0] for name in lora_list]
+            lora_choices = ["Insert LoRA"] + [name.rsplit(".", 1)[0] for name in lora_list]
             embedding_list = folder_paths.get_filename_list("embeddings")
-            embedding_choices = ["CHOOSE"] + [name.rsplit(".", 1)[0] for name in embedding_list]
+            embedding_choices = ["Insert Embedding"] + [name.rsplit(".", 1)[0] for name in embedding_list]
         except Exception:
             # Fallback if ComfyUI imports fail (e.g., during testing)
-            lora_choices = ["CHOOSE"]
-            embedding_choices = ["CHOOSE"]
+            lora_choices = ["Insert LoRA"]
+            embedding_choices = ["Insert Embedding"]
 
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                "insert_lora": (lora_choices,),
-                "insert_embedding": (embedding_choices,),
+                "lora": (lora_choices,),
+                "embedding": (embedding_choices,),
             },
             "optional": {
                 "opt_model": ("MODEL",),
@@ -72,8 +72,8 @@ class PromptWithLoraNode(PromptingNode):
     def process(
         self,
         prompt: str,
-        insert_lora: str,
-        insert_embedding: str,
+        lora: str,
+        embedding: str,
         opt_model: Any | None = None,
         opt_clip: Any | None = None,
     ) -> NodeOutput:

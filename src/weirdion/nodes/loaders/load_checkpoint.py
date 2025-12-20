@@ -25,13 +25,13 @@ class LoadCheckpointNode(LoaderNode):
             import folder_paths
 
             ckpt_list = folder_paths.get_filename_list("checkpoints")
-            ckpt_choices = ["CHOOSE"] + ckpt_list
+            ckpt_choices = ["Select Checkpoint"] + ckpt_list
         except Exception:
-            ckpt_choices = ["CHOOSE"]
+            ckpt_choices = ["Select Checkpoint"]
 
         return {
             "required": {
-                "ckpt_name": (ckpt_choices,),
+                "checkpoint": (ckpt_choices,),
             },
             "optional": {
                 "opt_clip": ("CLIP",),
@@ -51,7 +51,7 @@ class LoadCheckpointNode(LoaderNode):
 
     def process(
         self,
-        ckpt_name: str,
+        checkpoint: str,
         opt_clip: Any | None = None,
         opt_vae: Any | None = None,
     ) -> NodeOutput:
@@ -62,7 +62,7 @@ class LoadCheckpointNode(LoaderNode):
         except Exception as e:  # pragma: no cover - ComfyUI runtime only
             raise RuntimeError("ComfyUI runtime dependencies not available") from e
 
-        ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
+        ckpt_path = folder_paths.get_full_path("checkpoints", checkpoint)
         outputs = comfy.sd.load_checkpoint_guess_config(
             ckpt_path,
             output_vae=True,
@@ -75,4 +75,4 @@ class LoadCheckpointNode(LoaderNode):
         output_clip = opt_clip if opt_clip is not None else loaded_clip
         output_vae = opt_vae if opt_vae is not None else loaded_vae
 
-        return (model, output_clip, output_vae, ckpt_name)
+        return (model, output_clip, output_vae, checkpoint)
