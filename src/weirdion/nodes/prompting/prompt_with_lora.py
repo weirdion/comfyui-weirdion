@@ -18,9 +18,9 @@ class PromptWithLoraNode(PromptingNode):
 
     Features:
     - Parse <lora:name:strength> tags from prompt
-    - Load LoRAs into MODEL if connected
+    - Load LoRAs into MODEL/CLIP if connected
     - Encode to CONDITIONING if CLIP connected
-    - Output clean TEXT (with LoRA tags for Image Saver compatibility)
+    - Output TEXT (with LoRA tags for Image Saver compatibility)
 
     Design Philosophy:
     - Lego pieces: Optional MODEL/CLIP inputs
@@ -55,13 +55,13 @@ class PromptWithLoraNode(PromptingNode):
 
     @classmethod
     def get_return_types(cls) -> tuple[ComfyType, ...]:
-        """Returns MODEL, CONDITIONING, STRING."""
-        return ("MODEL", "CONDITIONING", "STRING")
+        """Returns MODEL, CLIP, CONDITIONING, STRING."""
+        return ("MODEL", "CLIP", "CONDITIONING", "STRING")
 
     @classmethod
     def get_return_names(cls) -> tuple[str, ...]:
         """Name the outputs."""
-        return ("model", "conditioning", "text")
+        return ("model", "clip", "conditioning", "text")
 
     def process(
         self,
@@ -80,7 +80,7 @@ class PromptWithLoraNode(PromptingNode):
             clip: Optional CLIP input for encoding
 
         Returns:
-            (model, conditioning, text) tuple
+            (model, clip, conditioning, text) tuple
         """
         # Handle LoRA dropdown insertion (insert at cursor position with default strength 1.0)
         working_prompt = prompt
@@ -93,7 +93,7 @@ class PromptWithLoraNode(PromptingNode):
         # Parse LoRA tags from prompt
         lora_tags = parse_lora_tags(working_prompt)
 
-        # Load LoRAs if MODEL connected
+        # Load LoRAs if MODEL and CLIP connected
         if model is not None and clip is not None and lora_tags:
             for lora_tag in lora_tags:
                 try:
@@ -123,6 +123,6 @@ class PromptWithLoraNode(PromptingNode):
             except Exception as e:
                 print(f"[weirdion_PromptWithLora] Warning: Failed to encode prompt: {e}")
 
-        # Return (model, conditioning, text)
+        # Return (model, clip, conditioning, text)
         # Text keeps LoRA tags for Image Saver compatibility
-        return (model, conditioning, working_prompt)
+        return (model, clip, conditioning, working_prompt)

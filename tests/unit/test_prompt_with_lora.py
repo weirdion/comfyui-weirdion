@@ -26,14 +26,14 @@ def test_prompt_with_lora_return_types() -> None:
     """Test that return types are correctly defined."""
     types = PromptWithLoraNode.get_return_types()
 
-    assert types == ("MODEL", "CONDITIONING", "STRING")
+    assert types == ("MODEL", "CLIP", "CONDITIONING", "STRING")
 
 
 def test_prompt_with_lora_return_names() -> None:
     """Test that return names are correctly defined."""
     names = PromptWithLoraNode.get_return_names()
 
-    assert names == ("model", "conditioning", "text")
+    assert names == ("model", "clip", "conditioning", "text")
 
 
 def test_prompt_with_lora_category() -> None:
@@ -46,9 +46,10 @@ def test_prompt_with_lora_text_only_mode() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, blonde hair"
 
-    model, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
 
     assert model is None
+    assert clip is None
     assert conditioning is None
     assert text == prompt
 
@@ -58,7 +59,7 @@ def test_prompt_with_lora_preserves_tags() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, <lora:style:0.8>"
 
-    model, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
 
     assert text == prompt
     assert "<lora:style:0.8>" in text
@@ -69,7 +70,7 @@ def test_prompt_with_lora_dropdown_insertion() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl"
 
-    model, conditioning, text = node.process(prompt=prompt, insert_lora="my-style")
+    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="my-style")
 
     assert text == "a girl, <lora:my-style:1.0>"
 
@@ -79,7 +80,7 @@ def test_prompt_with_lora_multiple_tags() -> None:
     node = PromptWithLoraNode()
     prompt = "<lora:style:0.8>, a girl, <lora:lighting:0.5>"
 
-    model, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
 
     assert text == prompt
     assert "<lora:style:0.8>" in text
@@ -91,7 +92,7 @@ def test_prompt_with_lora_high_strength() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, <lora:style:2.5>"
 
-    model, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
 
     assert text == prompt
     assert "<lora:style:2.5>" in text
@@ -102,7 +103,7 @@ def test_prompt_with_lora_negative_strength() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, <lora:style:-0.5>"
 
-    model, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
 
     assert text == prompt
     assert "<lora:style:-0.5>" in text
