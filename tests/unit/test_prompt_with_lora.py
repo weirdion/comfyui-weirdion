@@ -75,45 +75,52 @@ def test_prompt_with_lora_preserves_tags() -> None:
 
 
 def test_prompt_with_lora_dropdown_insertion() -> None:
-    """Test LoRA insertion from dropdown with default strength 1.0."""
+    """Test that prompt with manually inserted LoRA tag works (JS handles insertion)."""
     node = PromptWithLoraNode()
-    prompt = "a girl"
+    # In real usage, JS inserts the tag before execution
+    prompt = "a girl, <lora:my-style:1.0>"
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="my-style",
+        insert_lora="CHOOSE",  # JS resets this after insertion
         insert_embedding="CHOOSE",
     )
 
     assert text == "a girl, <lora:my-style:1.0>"
+    assert "<lora:my-style:1.0>" in text
 
 
 def test_prompt_with_lora_embedding_insertion() -> None:
-    """Test embedding insertion from dropdown."""
+    """Test that prompt with manually inserted embedding works (JS handles insertion)."""
     node = PromptWithLoraNode()
-    prompt = "a girl"
+    # In real usage, JS inserts the tag before execution
+    prompt = "a girl, embedding:my-embedding"
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
         insert_lora="CHOOSE",
-        insert_embedding="my-embedding",
+        insert_embedding="CHOOSE",  # JS resets this after insertion
     )
 
     assert text == "a girl, embedding:my-embedding"
+    assert "embedding:my-embedding" in text
 
 
 def test_prompt_with_lora_lora_and_embedding_insertion() -> None:
-    """Test inserting both LoRA and embedding."""
+    """Test prompt with both LoRA and embedding tags (JS handles insertion)."""
     node = PromptWithLoraNode()
-    prompt = "a girl"
+    # In real usage, JS inserts both tags before execution
+    prompt = "a girl, <lora:my-style:1.0>, embedding:my-embedding"
 
     model, clip, conditioning, text = node.process(
         prompt=prompt,
-        insert_lora="my-style",
-        insert_embedding="my-embedding",
+        insert_lora="CHOOSE",  # JS resets this after insertion
+        insert_embedding="CHOOSE",  # JS resets this after insertion
     )
 
     assert text == "a girl, <lora:my-style:1.0>, embedding:my-embedding"
+    assert "<lora:my-style:1.0>" in text
+    assert "embedding:my-embedding" in text
 
 
 def test_prompt_with_lora_multiple_tags() -> None:

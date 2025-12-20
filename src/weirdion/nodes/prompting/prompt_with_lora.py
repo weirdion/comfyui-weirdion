@@ -77,32 +77,23 @@ class PromptWithLoraNode(PromptingNode):
         clip: Any | None = None,
     ) -> NodeOutput:
         """
-        Process the prompt, handle LoRA insertion, loading, and encoding.
+        Process the prompt, handle LoRA loading, and encoding.
+
+        Note: LoRA/embedding insertion is handled by the JavaScript web extension.
+        The dropdowns are just used by the UI to insert text into the prompt field.
 
         Args:
-            prompt: Input prompt text with <lora:name:strength> tags
-            insert_lora: LoRA name from dropdown (inserts <lora:name:1.0> at cursor)
-            insert_embedding: Embedding name from dropdown (inserts embedding:name at cursor)
+            prompt: Input prompt text with <lora:name:strength> tags and embedding:name tags
+            insert_lora: LoRA dropdown (handled by JS, should always be "CHOOSE" at execution)
+            insert_embedding: Embedding dropdown (handled by JS, should always be "CHOOSE" at execution)
             model: Optional MODEL input for LoRA loading
             clip: Optional CLIP input for encoding
 
         Returns:
             (model, clip, conditioning, text) tuple
         """
-        # Handle dropdown insertions (ComfyUI doesn't provide cursor position, so we append)
-        working_prompt = prompt
-        insertions = []
-        if insert_lora and insert_lora != "CHOOSE":
-            insertions.append(f"<lora:{insert_lora}:1.0>")
-        if insert_embedding and insert_embedding != "CHOOSE":
-            insertions.append(f"embedding:{insert_embedding}")
-
-        if insertions:
-            inserted_text = ", ".join(insertions)
-            working_prompt = f"{prompt.rstrip()}, {inserted_text}" if prompt else inserted_text
-
-        # Parse LoRA tags from prompt
-        lora_tags = parse_lora_tags(working_prompt)
+        # Parse LoRA tags from prompt (insertion already handled by JS extension)
+        lora_tags = parse_lora_tags(prompt)
 
         # Load LoRAs if MODEL and CLIP connected
         if model is not None and clip is not None and lora_tags:
@@ -127,7 +118,7 @@ class PromptWithLoraNode(PromptingNode):
                 from nodes import CLIPTextEncode
 
                 # Strip LoRA tags for clean conditioning
-                clean_prompt = strip_lora_tags(working_prompt)
+                clean_prompt = strip_lora_tags(prompt)
 
                 # Encode (CLIPTextEncode returns tuple with conditioning as first element)
                 conditioning = CLIPTextEncode().encode(clip, clean_prompt)[0]
@@ -136,4 +127,4 @@ class PromptWithLoraNode(PromptingNode):
 
         # Return (model, clip, conditioning, text)
         # Text keeps LoRA tags for Image Saver compatibility
-        return (model, clip, conditioning, working_prompt)
+        return (model, clip, conditioning, prompt)

@@ -15,4 +15,7 @@ if str(src_dir) not in sys.path:
 
 from weirdion import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
+# Register web assets for ComfyUI UI extensions.
+WEB_DIRECTORY = "web"
+
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
