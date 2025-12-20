@@ -27,6 +27,11 @@ Here’s the quick rundown. Short and sweet.
 - Outputs: `model`, `clip`, `vae`, `model_name`
 - Notes: `clip_skip` follows ComfyUI rules (-1 = no skip).
 
+<details>
+  <summary>Screenshot</summary>
+  <img src="docs/assets/node-load-checkpoint-w-clip-skip.png" alt="Load Checkpoint w/ Clip Skip">
+</details>
+
 ### Prompt w/ LoRA
 > A prompt box that understands `<lora:name:strength>` and can load them for you.
 
