@@ -30,7 +30,7 @@ class PromptWithLoraNode(PromptingNode):
 
     @classmethod
     def get_input_spec(cls) -> InputSpec:
-        """Define inputs: prompt, optional MODEL/CLIP, and LoRA dropdown."""
+        """Define inputs: prompt, LoRA dropdown, and optional MODEL/CLIP."""
         # Import here to avoid circular dependencies
         try:
             import folder_paths
@@ -45,53 +45,50 @@ class PromptWithLoraNode(PromptingNode):
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                "lora_strength": ("FLOAT", {"default": 1.0}),
+                "insert_lora": (lora_choices,),
             },
             "optional": {
                 "model": ("MODEL",),
                 "clip": ("CLIP",),
-                "insert_lora": (lora_choices,),
             },
         }
 
     @classmethod
     def get_return_types(cls) -> tuple[ComfyType, ...]:
-        """Returns MODEL, CONDITIONING, CLIP, STRING."""
-        return ("MODEL", "CONDITIONING", "CLIP", "STRING")
+        """Returns MODEL, CONDITIONING, STRING."""
+        return ("MODEL", "CONDITIONING", "STRING")
 
     @classmethod
     def get_return_names(cls) -> tuple[str, ...]:
         """Name the outputs."""
-        return ("model", "conditioning", "clip", "text")
+        return ("model", "conditioning", "text")
 
     def process(
         self,
         prompt: str,
-        lora_strength: float,
+        insert_lora: str,
         model: Any | None = None,
         clip: Any | None = None,
-        insert_lora: str | None = None,
     ) -> NodeOutput:
         """
         Process the prompt, handle LoRA insertion, loading, and encoding.
 
         Args:
-            prompt: Input prompt text (may contain <lora:> tags)
-            lora_strength: Default strength for inserted LoRAs
+            prompt: Input prompt text with <lora:name:strength> tags
+            insert_lora: LoRA name from dropdown (inserts <lora:name:1.0> at cursor)
             model: Optional MODEL input for LoRA loading
             clip: Optional CLIP input for encoding
-            insert_lora: LoRA name from dropdown (appends to prompt)
 
         Returns:
-            (model, conditioning, clip, text) tuple
+            (model, conditioning, text) tuple
         """
+        # Handle LoRA dropdown insertion (insert at cursor position with default strength 1.0)
         working_prompt = prompt
-
-        # Handle LoRA dropdown insertion
         if insert_lora and insert_lora != "CHOOSE":
-            # Append LoRA tag to prompt
-            lora_tag = f"<lora:{insert_lora}:{lora_strength}>"
-            working_prompt = f"{working_prompt.rstrip()}, {lora_tag}" if working_prompt else lora_tag
+            # Insert LoRA tag with default strength 1.0
+            # Note: ComfyUI doesn't provide cursor position, so we append
+            lora_tag = f"<lora:{insert_lora}:1.0>"
+            working_prompt = f"{prompt.rstrip()}, {lora_tag}" if prompt else lora_tag
 
         # Parse LoRA tags from prompt
         lora_tags = parse_lora_tags(working_prompt)
@@ -126,6 +123,6 @@ class PromptWithLoraNode(PromptingNode):
             except Exception as e:
                 print(f"[weirdion_PromptWithLora] Warning: Failed to encode prompt: {e}")
 
-        # Return (model, conditioning, clip, text)
+        # Return (model, conditioning, text)
         # Text keeps LoRA tags for Image Saver compatibility
-        return (model, conditioning, clip, working_prompt)
+        return (model, conditioning, working_prompt)
