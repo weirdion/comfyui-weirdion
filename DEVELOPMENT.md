@@ -9,6 +9,12 @@ If you're just using the nodes, you can skip this file. This is for hacking on t
 - **DRY architecture**: Base classes eliminate boilerplate
 - **Organized namespaces**: Nodes are grouped by purpose
 
+## Decisions (ADRs)
+
+- [ADR-0001: Node Naming and UI Conventions](docs/adr/adr-0001-node-naming-and-ui.md)
+- [ADR-0002: Checkpoint Loading and CLIP Skip](docs/adr/adr-0002-checkpoint-loading-and-clip-skip.md)
+- [ADR-0003: Docs and Screenshot Assets](docs/adr/adr-0003-docs-and-assets.md)
+
 ## Installation
 
 ### Prerequisites
@@ -80,7 +86,7 @@ from weirdion.core import UtilityNode, register_node
 from weirdion.types import ComfyType, InputSpec, NodeOutput
 
 
-@register_node(name="WDN_MyNode", display_name="My Node (weirdion)")
+@register_node(name="weirdion_MyNode", display_name="My Node (weirdion)")
 class MyNode(UtilityNode):
     """Brief description of what this node does."""
 
