@@ -1,0 +1,12 @@
+{
+  "default_profile": {
+    "name": "Default",
+    "steps": 30,
+    "cfg": 5,
+    "sampler": "euler_ancestral",
+    "scheduler": "karras",
+    "denoise": 1.0,
+    "clip_skip": -2,
+    "note": ""
+  }
+}

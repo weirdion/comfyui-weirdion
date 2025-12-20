@@ -5,6 +5,7 @@ from .comfy_types import (
     Boolean,
     Clip,
     ComfyType,
+    ComfyReturnType,
     Conditioning,
     ControlNet,
     Float,
@@ -37,6 +38,7 @@ __all__ = [
     "Float",
     "Boolean",
     "ComfyType",
+    "ComfyReturnType",
     "InputSpec",
     "NodeOutput",
     # Widget configs

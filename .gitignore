@@ -55,6 +55,7 @@ Thumbs.db
 .env
 config.local.json
 *.local.*
+.config/profiles.user.json
 
 # Logs
 *.log

@@ -14,6 +14,7 @@ If you're just using the nodes, you can skip this file. This is for hacking on t
 - [ADR-0001: Node Naming and UI Conventions](docs/adr/adr-0001-node-naming-and-ui.md)
 - [ADR-0002: Checkpoint Loading and CLIP Skip](docs/adr/adr-0002-checkpoint-loading-and-clip-skip.md)
 - [ADR-0003: Docs and Screenshot Assets](docs/adr/adr-0003-docs-and-assets.md)
+- [ADR-0004: Profile Manager UI and Profiles Storage](docs/adr/adr-0004-profile-manager-and-profiles.md)
 
 ## Installation
 

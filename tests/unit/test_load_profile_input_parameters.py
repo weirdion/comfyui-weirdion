@@ -1,0 +1,48 @@
+"""Tests for LoadProfileInputParametersNode."""
+
+from weirdion.nodes.loaders import LoadProfileInputParametersNode
+
+
+def test_load_profile_input_parameters_input_spec() -> None:
+    """Test that input spec is correctly defined."""
+    spec = LoadProfileInputParametersNode.get_input_spec()
+
+    assert "required" in spec
+    assert "checkpoint_name" in spec["required"]
+    assert "profile" in spec["required"]
+
+
+def test_load_profile_input_parameters_return_types() -> None:
+    """Test that return types are correctly defined."""
+    types = LoadProfileInputParametersNode.get_return_types()
+
+    assert len(types) == 9
+    assert types[0] == "STRING"
+    assert types[1] == "INT"
+    assert types[2] == "FLOAT"
+    assert types[4] == "STRING"
+    assert types[6] == "STRING"
+    assert types[7] == "INT"
+    assert types[8] == "FLOAT"
+
+
+def test_load_profile_input_parameters_return_names() -> None:
+    """Test that return names are correctly defined."""
+    names = LoadProfileInputParametersNode.get_return_names()
+
+    assert names == (
+        "checkpoint_name",
+        "steps",
+        "cfg",
+        "sampler",
+        "sampler_name",
+        "scheduler",
+        "scheduler_name",
+        "clip_skip",
+        "denoise",
+    )
+
+
+def test_load_profile_input_parameters_category() -> None:
+    """Test that node is in correct category."""
+    assert LoadProfileInputParametersNode.CATEGORY == "weirdion/loaders"

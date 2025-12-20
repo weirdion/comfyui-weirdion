@@ -1,0 +1,226 @@
+.weirdion-profile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    display: none;
+}
+
+.weirdion-profile-modal {
+    position: fixed;
+    inset: 6% 8%;
+    background: var(--comfy-menu-bg, #282828);
+    border: 1px solid var(--border-color, #444);
+    border-radius: 10px;
+    z-index: 1001;
+    display: none;
+    color: var(--fg-color, #ddd);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.weirdion-profile-modal.is-open,
+.weirdion-profile-overlay.is-open {
+    display: block;
+}
+
+.weirdion-profile-shell {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    height: 100%;
+}
+
+.weirdion-profile-nav {
+    border-right: 1px solid var(--border-color, #444);
+    padding: 16px 12px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.weirdion-profile-nav h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-color, #bbb);
+}
+
+.weirdion-profile-nav .nav-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 6px;
+    background: transparent;
+}
+
+.weirdion-profile-nav .nav-item.active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.weirdion-profile-content {
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 18px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.weirdion-profile-list {
+    border-right: 1px solid var(--border-color, #444);
+    padding-right: 12px;
+    overflow: auto;
+}
+
+.weirdion-profile-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.weirdion-profile-pill.active {
+    background: rgba(82, 153, 255, 0.25);
+    outline: 1px solid rgba(82, 153, 255, 0.6);
+}
+
+.weirdion-profile-pill .pill-tag {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.weirdion-profile-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    align-content: start;
+}
+
+.weirdion-profile-form .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.weirdion-profile-form input,
+.weirdion-profile-form select,
+.weirdion-profile-form textarea {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color, #444);
+    color: var(--fg-color, #ddd);
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.weirdion-profile-form textarea {
+    resize: vertical;
+    min-height: 70px;
+    grid-column: span 3;
+}
+
+.weirdion-profile-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.weirdion-button {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color, #444);
+    color: var(--fg-color, #ddd);
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.weirdion-button.primary {
+    background: rgba(82, 153, 255, 0.25);
+    border-color: rgba(82, 153, 255, 0.6);
+}
+
+.weirdion-button.danger {
+    background: rgba(255, 82, 82, 0.2);
+    border-color: rgba(255, 82, 82, 0.6);
+}
+
+.weirdion-checkpoints {
+    grid-column: span 3;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.weirdion-checkpoint-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 180px;
+    overflow: auto;
+    padding: 6px;
+    border: 1px solid var(--border-color, #444);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.weirdion-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.weirdion-chip.selected {
+    background: rgba(82, 153, 255, 0.25);
+    outline: 1px solid rgba(82, 153, 255, 0.6);
+}
+
+.weirdion-chip.missing {
+    background: rgba(255, 196, 82, 0.15);
+    outline: 1px dashed rgba(255, 196, 82, 0.6);
+}
+
+.weirdion-chip .star {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.weirdion-profile-note {
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.weirdion-profile-footer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.weirdion-toast {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid var(--border-color, #444);
+    color: var(--fg-color, #ddd);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    z-index: 1100;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.weirdion-toast.error {
+    border-color: rgba(255, 82, 82, 0.6);
+}

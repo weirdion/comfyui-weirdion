@@ -39,6 +39,9 @@ ComfyType = Literal[
     "BOOLEAN",
 ]
 
+# Return types can also be COMBO lists (e.g., sampler/scheduler lists)
+ComfyReturnType = ComfyType | list[str]
+
 
 # Widget configuration types
 class WidgetConfig:
