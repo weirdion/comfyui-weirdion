@@ -16,6 +16,7 @@ def test_prompt_with_lora_input_spec() -> None:
     assert "required" in spec
     assert "prompt" in spec["required"]
     assert "insert_lora" in spec["required"]
+    assert "insert_embedding" in spec["required"]
 
     assert "optional" in spec
     assert "model" in spec["optional"]
@@ -33,7 +34,7 @@ def test_prompt_with_lora_return_names() -> None:
     """Test that return names are correctly defined."""
     names = PromptWithLoraNode.get_return_names()
 
-    assert names == ("model", "clip", "conditioning", "text")
+    assert names == ("model", "clip", "conditioning", "prompt_text")
 
 
 def test_prompt_with_lora_category() -> None:
@@ -46,7 +47,11 @@ def test_prompt_with_lora_text_only_mode() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, blonde hair"
 
-    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="CHOOSE",
+        insert_embedding="CHOOSE",
+    )
 
     assert model is None
     assert clip is None
@@ -59,7 +64,11 @@ def test_prompt_with_lora_preserves_tags() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, <lora:style:0.8>"
 
-    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="CHOOSE",
+        insert_embedding="CHOOSE",
+    )
 
     assert text == prompt
     assert "<lora:style:0.8>" in text
@@ -70,9 +79,41 @@ def test_prompt_with_lora_dropdown_insertion() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl"
 
-    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="my-style")
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="my-style",
+        insert_embedding="CHOOSE",
+    )
 
     assert text == "a girl, <lora:my-style:1.0>"
+
+
+def test_prompt_with_lora_embedding_insertion() -> None:
+    """Test embedding insertion from dropdown."""
+    node = PromptWithLoraNode()
+    prompt = "a girl"
+
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="CHOOSE",
+        insert_embedding="my-embedding",
+    )
+
+    assert text == "a girl, embedding:my-embedding"
+
+
+def test_prompt_with_lora_lora_and_embedding_insertion() -> None:
+    """Test inserting both LoRA and embedding."""
+    node = PromptWithLoraNode()
+    prompt = "a girl"
+
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="my-style",
+        insert_embedding="my-embedding",
+    )
+
+    assert text == "a girl, <lora:my-style:1.0>, embedding:my-embedding"
 
 
 def test_prompt_with_lora_multiple_tags() -> None:
@@ -80,7 +121,11 @@ def test_prompt_with_lora_multiple_tags() -> None:
     node = PromptWithLoraNode()
     prompt = "<lora:style:0.8>, a girl, <lora:lighting:0.5>"
 
-    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="CHOOSE",
+        insert_embedding="CHOOSE",
+    )
 
     assert text == prompt
     assert "<lora:style:0.8>" in text
@@ -92,7 +137,11 @@ def test_prompt_with_lora_high_strength() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, <lora:style:2.5>"
 
-    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="CHOOSE",
+        insert_embedding="CHOOSE",
+    )
 
     assert text == prompt
     assert "<lora:style:2.5>" in text
@@ -103,7 +152,11 @@ def test_prompt_with_lora_negative_strength() -> None:
     node = PromptWithLoraNode()
     prompt = "a girl, <lora:style:-0.5>"
 
-    model, clip, conditioning, text = node.process(prompt=prompt, insert_lora="CHOOSE")
+    model, clip, conditioning, text = node.process(
+        prompt=prompt,
+        insert_lora="CHOOSE",
+        insert_embedding="CHOOSE",
+    )
 
     assert text == prompt
     assert "<lora:style:-0.5>" in text

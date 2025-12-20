@@ -21,6 +21,7 @@ class PromptWithLoraNode(PromptingNode):
     - Load LoRAs into MODEL/CLIP if connected
     - Encode to CONDITIONING if CLIP connected
     - Output TEXT (with LoRA tags for Image Saver compatibility)
+    - Insert embeddings via dropdown
 
     Design Philosophy:
     - Lego pieces: Optional MODEL/CLIP inputs
@@ -30,7 +31,7 @@ class PromptWithLoraNode(PromptingNode):
 
     @classmethod
     def get_input_spec(cls) -> InputSpec:
-        """Define inputs: prompt, LoRA dropdown, and optional MODEL/CLIP."""
+        """Define inputs: prompt, LoRA/embedding dropdowns, and optional MODEL/CLIP."""
         # Import here to avoid circular dependencies
         try:
             import folder_paths
@@ -38,14 +39,18 @@ class PromptWithLoraNode(PromptingNode):
             lora_list = folder_paths.get_filename_list("loras")
             # Strip extensions for cleaner display
             lora_choices = ["CHOOSE"] + [name.rsplit(".", 1)[0] for name in lora_list]
+            embedding_list = folder_paths.get_filename_list("embeddings")
+            embedding_choices = ["CHOOSE"] + [name.rsplit(".", 1)[0] for name in embedding_list]
         except Exception:
             # Fallback if ComfyUI imports fail (e.g., during testing)
             lora_choices = ["CHOOSE"]
+            embedding_choices = ["CHOOSE"]
 
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "dynamicPrompts": False}),
                 "insert_lora": (lora_choices,),
+                "insert_embedding": (embedding_choices,),
             },
             "optional": {
                 "model": ("MODEL",),
@@ -61,12 +66,13 @@ class PromptWithLoraNode(PromptingNode):
     @classmethod
     def get_return_names(cls) -> tuple[str, ...]:
         """Name the outputs."""
-        return ("model", "clip", "conditioning", "text")
+        return ("model", "clip", "conditioning", "prompt_text")
 
     def process(
         self,
         prompt: str,
         insert_lora: str,
+        insert_embedding: str,
         model: Any | None = None,
         clip: Any | None = None,
     ) -> NodeOutput:
@@ -76,19 +82,24 @@ class PromptWithLoraNode(PromptingNode):
         Args:
             prompt: Input prompt text with <lora:name:strength> tags
             insert_lora: LoRA name from dropdown (inserts <lora:name:1.0> at cursor)
+            insert_embedding: Embedding name from dropdown (inserts embedding:name at cursor)
             model: Optional MODEL input for LoRA loading
             clip: Optional CLIP input for encoding
 
         Returns:
             (model, clip, conditioning, text) tuple
         """
-        # Handle LoRA dropdown insertion (insert at cursor position with default strength 1.0)
+        # Handle dropdown insertions (ComfyUI doesn't provide cursor position, so we append)
         working_prompt = prompt
+        insertions = []
         if insert_lora and insert_lora != "CHOOSE":
-            # Insert LoRA tag with default strength 1.0
-            # Note: ComfyUI doesn't provide cursor position, so we append
-            lora_tag = f"<lora:{insert_lora}:1.0>"
-            working_prompt = f"{prompt.rstrip()}, {lora_tag}" if prompt else lora_tag
+            insertions.append(f"<lora:{insert_lora}:1.0>")
+        if insert_embedding and insert_embedding != "CHOOSE":
+            insertions.append(f"embedding:{insert_embedding}")
+
+        if insertions:
+            inserted_text = ", ".join(insertions)
+            working_prompt = f"{prompt.rstrip()}, {inserted_text}" if prompt else inserted_text
 
         # Parse LoRA tags from prompt
         lora_tags = parse_lora_tags(working_prompt)
