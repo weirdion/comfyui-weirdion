@@ -13,7 +13,7 @@ src_dir = current_dir / "src"
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-from weirdion import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+from weirdion import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS  # noqa: E402
 
 # Register web assets for ComfyUI UI extensions.
 WEB_DIRECTORY = "web"
