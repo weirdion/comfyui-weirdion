@@ -131,10 +131,6 @@ def test_my_node_basic():
 
 ## Available Nodes
 
-### Utilities
-
-- **Text Combine (WDN_TextCombine)**: Combines two text inputs with a separator
-
 ## Contributing
 
 This is a personal repository, but issues and PRs are welcome if they align with the project philosophy.
