@@ -18,6 +18,14 @@ class LoadCheckpointNode(LoaderNode):
     If CLIP and/or VAE are provided as inputs, they override the loaded ones.
     """
 
+    DESCRIPTION = "Load a checkpoint and optionally override CLIP and/or VAE."
+    OUTPUT_TOOLTIPS = (
+        "U-Net model (denoising latents)",
+        "CLIP (text encoder)",
+        "VAE (latent/pixel conversion)",
+        "Checkpoint name",
+    )
+
     @classmethod
     def get_input_spec(cls) -> InputSpec:
         """Define inputs: checkpoint name and optional CLIP/VAE."""
@@ -31,11 +39,14 @@ class LoadCheckpointNode(LoaderNode):
 
         return {
             "required": {
-                "checkpoint": (ckpt_choices,),
+                "checkpoint": (
+                    ckpt_choices,
+                    {"default": "Select Checkpoint", "tooltip": "Checkpoint to load"},
+                ),
             },
             "optional": {
-                "opt_clip": ("CLIP",),
-                "opt_vae": ("VAE",),
+                "opt_clip": ("CLIP", {"tooltip": "Optional CLIP override"}),
+                "opt_vae": ("VAE", {"tooltip": "Optional VAE override"}),
             },
         }
 

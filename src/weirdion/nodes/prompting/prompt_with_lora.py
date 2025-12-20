@@ -30,6 +30,14 @@ class PromptWithLoraNode(PromptingNode):
     - Text-first: Tags preserved for metadata tools
     """
 
+    DESCRIPTION = "Prompt with LoRA and embedding dropdowns, with optional LoRA loading and encoding."
+    OUTPUT_TOOLTIPS = (
+        "MODEL with LoRAs applied (if model input provided)",
+        "CLIP with LoRAs applied (if clip input provided)",
+        "CONDITIONING (if clip input provided)",
+        "Prompt text (LoRA tags preserved)",
+    )
+
     @classmethod
     def get_input_spec(cls) -> InputSpec:
         """Define inputs: prompt, LoRA/embedding dropdowns, and optional MODEL/CLIP."""
@@ -49,13 +57,26 @@ class PromptWithLoraNode(PromptingNode):
 
         return {
             "required": {
-                "prompt": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                "lora": (lora_choices,),
-                "embedding": (embedding_choices,),
+                "prompt": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "dynamicPrompts": False,
+                        "tooltip": "Prompt text. LoRA tags like <lora:name:strength> are supported.",
+                    },
+                ),
+                "lora": (
+                    lora_choices,
+                    {"default": "Insert LoRA", "tooltip": "Insert a LoRA tag into the prompt"},
+                ),
+                "embedding": (
+                    embedding_choices,
+                    {"default": "Insert Embedding", "tooltip": "Insert an embedding tag into the prompt"},
+                ),
             },
             "optional": {
-                "opt_model": ("MODEL",),
-                "opt_clip": ("CLIP",),
+                "opt_model": ("MODEL", {"tooltip": "Optional MODEL input for LoRA loading"}),
+                "opt_clip": ("CLIP", {"tooltip": "Optional CLIP input for LoRA loading and encoding"}),
             },
         }
 

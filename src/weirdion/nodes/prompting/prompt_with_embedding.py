@@ -24,6 +24,12 @@ class PromptWithEmbeddingNode(PromptingNode):
     - Output TEXT for metadata and downstream use
     """
 
+    DESCRIPTION = "Prompt with embedding dropdown and optional CLIP encoding."
+    OUTPUT_TOOLTIPS = (
+        "CONDITIONING (if clip input provided)",
+        "Prompt text",
+    )
+
     @classmethod
     def get_input_spec(cls) -> InputSpec:
         """Define inputs: prompt text, embedding dropdown, and optional CLIP."""
@@ -38,11 +44,21 @@ class PromptWithEmbeddingNode(PromptingNode):
 
         return {
             "required": {
-                "prompt": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                "embedding": (embedding_choices,),
+                "prompt": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "dynamicPrompts": False,
+                        "tooltip": "Prompt text. Use embedding:NAME or the dropdown to insert.",
+                    },
+                ),
+                "embedding": (
+                    embedding_choices,
+                    {"default": "Insert Embedding", "tooltip": "Insert an embedding tag into the prompt"},
+                ),
             },
             "optional": {
-                "opt_clip": ("CLIP",),
+                "opt_clip": ("CLIP", {"tooltip": "Optional CLIP input for encoding"}),
             },
         }
 
