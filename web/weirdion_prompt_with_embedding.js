@@ -30,9 +30,7 @@ app.registerExtension({
                         const currentText = promptWidget.value || "";
                         const embeddingTag = `embedding:${value}`;
 
-                        const newText = currentText
-                            ? `${currentText.trimEnd()}, ${embeddingTag}`
-                            : embeddingTag;
+                        const newText = `${currentText}${embeddingTag}`;
 
                         promptWidget.value = newText;
                         embeddingWidget.value = "CHOOSE";

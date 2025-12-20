@@ -4,6 +4,7 @@ Prompt with LoRA node.
 Clean, opinionated prompt node that handles LoRA insertion and loading.
 """
 
+from pathlib import Path
 from typing import Any
 
 from ...core import PromptingNode, register_node
@@ -102,10 +103,12 @@ class PromptWithLoraNode(PromptingNode):
                     # Import LoraLoader from ComfyUI
                     from nodes import LoraLoader
 
+                    lora_name = self._resolve_lora_name(lora_tag.name)
+
                     # Load LoRA into model and clip
                     # LoraLoader.load_lora returns (model, clip)
                     model, clip = LoraLoader().load_lora(
-                        model, clip, lora_tag.name, lora_tag.strength, lora_tag.strength
+                        model, clip, lora_name, lora_tag.strength, lora_tag.strength
                     )
                 except Exception as e:
                     # If LoRA loading fails, log but continue
@@ -128,3 +131,32 @@ class PromptWithLoraNode(PromptingNode):
         # Return (model, clip, conditioning, text)
         # Text keeps LoRA tags for Image Saver compatibility
         return (model, clip, conditioning, prompt)
+
+    @staticmethod
+    def _resolve_lora_name(name: str) -> str:
+        """Resolve a LoRA tag name to a file name if possible."""
+        try:
+            import folder_paths
+
+            lora_files = folder_paths.get_filename_list("loras")
+        except Exception:
+            return name
+
+        if name in lora_files:
+            return name
+
+        lowered = name.lower()
+        for candidate in lora_files:
+            candidate_lower = candidate.lower()
+            if candidate_lower == lowered:
+                return candidate
+
+            candidate_no_ext = Path(candidate).with_suffix("").as_posix().lower()
+            if candidate_no_ext == lowered:
+                return candidate
+
+        for candidate in lora_files:
+            if Path(candidate).stem.lower() == lowered:
+                return candidate
+
+        return name

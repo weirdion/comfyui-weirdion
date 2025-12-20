@@ -37,9 +37,7 @@ app.registerExtension({
                         const loraTag = `<lora:${value}:1.0>`;
 
                         // Insert at end with proper separator
-                        const newText = currentText
-                            ? `${currentText.trimEnd()}, ${loraTag}`
-                            : loraTag;
+                        const newText = `${currentText}${loraTag}`;
 
                         promptWidget.value = newText;
 
@@ -62,9 +60,7 @@ app.registerExtension({
                         const embeddingTag = `embedding:${value}`;
 
                         // Insert at end with proper separator
-                        const newText = currentText
-                            ? `${currentText.trimEnd()}, ${embeddingTag}`
-                            : embeddingTag;
+                        const newText = `${currentText}${embeddingTag}`;
 
                         promptWidget.value = newText;
 
