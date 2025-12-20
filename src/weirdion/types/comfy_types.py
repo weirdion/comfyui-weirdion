@@ -77,9 +77,7 @@ class StringWidgetConfig(WidgetConfig):
 # Input type specification
 InputSpec = dict[
     str,
-    tuple[ComfyType, dict[str, Any]]
-    | tuple[list[str],]
-    | tuple[list[str], dict[str, Any]],
+    tuple[ComfyType, dict[str, Any]] | tuple[list[str],] | tuple[list[str], dict[str, Any]],
 ]
 
 # Node function return type

@@ -89,7 +89,7 @@ class BaseNode(ABC):
         super().__init_subclass__(**kwargs)
 
         # Only set these if the class implements get_return_types (not abstract)
-        if not getattr(cls.get_return_types, '__isabstractmethod__', False):
+        if not getattr(cls.get_return_types, "__isabstractmethod__", False):
             cls.RETURN_TYPES = cls.get_return_types()
 
             # Set RETURN_NAMES if defined

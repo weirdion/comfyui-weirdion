@@ -12,13 +12,20 @@ Here’s the quick rundown. Short and sweet.
 > Load a checkpoint, but let you swap in your own CLIP and/or VAE if you want.
 
 - Inputs: `checkpoint`, optional `opt_clip`, optional `opt_vae`
-- Outputs: `model`, `clip`, `vae`, `model_name`
+- Outputs: `model`, `clip`, `vae`, `model_name`, `clip_skip_value`
 - Notes: if `opt_clip` or `opt_vae` is connected, it overrides what the checkpoint loaded.
 
 <details>
   <summary>Screenshot</summary>
   <img src="docs/assets/node-load-checkpoint-w-overrides.png" alt="Load Checkpoint w/ Overrides">
 </details>
+
+### Load Checkpoint w/ Clip Skip
+> Same as above, but bakes in clip skip so you can drop the extra node.
+
+- Inputs: `checkpoint`, `clip_skip`, optional `opt_clip`, optional `opt_vae`
+- Outputs: `model`, `clip`, `vae`, `model_name`
+- Notes: `clip_skip` follows ComfyUI rules (-1 = no skip).
 
 ### Prompt w/ LoRA
 > A prompt box that understands `<lora:name:strength>` and can load them for you.
