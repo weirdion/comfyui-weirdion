@@ -11,29 +11,38 @@ Here’s the quick rundown. Short and sweet.
 ### Load Checkpoint w/ Overrides
 > Load a checkpoint, but let you swap in your own CLIP and/or VAE if you want.
 
-![Load Checkpoint w/ Overrides](docs/assets/node-load-checkpoint-w-overrides.png)
-
 - Inputs: `ckpt_name`, optional `opt_clip`, optional `opt_vae`
 - Outputs: `model`, `clip`, `vae`, `model_name`
 - Notes: if `opt_clip` or `opt_vae` is connected, it overrides what the checkpoint loaded.
 
+<details>
+  <summary>Screenshot</summary>
+  <img src="docs/assets/node-load-checkpoint-w-overrides.png" alt="Load Checkpoint w/ Overrides">
+</details>
+
 ### Prompt w/ LoRA
 > A prompt box that understands `<lora:name:strength>` and can load them for you.
-
-![Prompt w/ LoRA](docs/assets/node-prompt-with-lora.png)
 
 - Inputs: `prompt`, `insert_lora`, `insert_embedding`, optional `opt_model`, optional `opt_clip`
 - Outputs: `model`, `clip`, `conditioning`, `prompt_text`
 - Notes: tags stay in `prompt_text` for metadata, but conditioning is encoded without LoRA tags.
 
+<details>
+  <summary>Screenshot</summary>
+  <img src="docs/assets/node-prompt-with-lora.png" alt="Prompt w/ LoRA">
+</details>
+
 ### Prompt w/ Embedding
 > Simple prompt + embedding dropdown. Optional CLIP encoding.
-
-![Prompt w/ Embedding](docs/assets/node-prompt-with-embedding.png)
 
 - Inputs: `prompt`, `insert_embedding`, optional `opt_clip`
 - Outputs: `conditioning`, `prompt_text`
 - Notes: if no `opt_clip`, this is just a text passthrough.
+
+<details>
+  <summary>Screenshot</summary>
+  <img src="docs/assets/node-prompt-with-embedding.png" alt="Prompt w/ Embedding">
+</details>
 
 ## Contributing
 
