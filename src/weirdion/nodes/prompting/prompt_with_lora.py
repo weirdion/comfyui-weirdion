@@ -54,8 +54,8 @@ class PromptWithLoraNode(PromptingNode):
                 "insert_embedding": (embedding_choices,),
             },
             "optional": {
-                "model": ("MODEL",),
-                "clip": ("CLIP",),
+                "opt_model": ("MODEL",),
+                "opt_clip": ("CLIP",),
             },
         }
 
@@ -74,8 +74,8 @@ class PromptWithLoraNode(PromptingNode):
         prompt: str,
         insert_lora: str,
         insert_embedding: str,
-        model: Any | None = None,
-        clip: Any | None = None,
+        opt_model: Any | None = None,
+        opt_clip: Any | None = None,
     ) -> NodeOutput:
         """
         Process the prompt, handle LoRA loading, and encoding.
@@ -97,7 +97,7 @@ class PromptWithLoraNode(PromptingNode):
         lora_tags = parse_lora_tags(prompt)
 
         # Load LoRAs if MODEL and CLIP connected
-        if model is not None and clip is not None and lora_tags:
+        if opt_model is not None and opt_clip is not None and lora_tags:
             for lora_tag in lora_tags:
                 try:
                     # Import LoraLoader from ComfyUI
@@ -107,8 +107,8 @@ class PromptWithLoraNode(PromptingNode):
 
                     # Load LoRA into model and clip
                     # LoraLoader.load_lora returns (model, clip)
-                    model, clip = LoraLoader().load_lora(
-                        model, clip, lora_name, lora_tag.strength, lora_tag.strength
+                    opt_model, opt_clip = LoraLoader().load_lora(
+                        opt_model, opt_clip, lora_name, lora_tag.strength, lora_tag.strength
                     )
                 except Exception as e:
                     # If LoRA loading fails, log but continue
@@ -116,7 +116,7 @@ class PromptWithLoraNode(PromptingNode):
 
         # Encode to CONDITIONING if CLIP connected
         conditioning = None
-        if clip is not None:
+        if opt_clip is not None:
             try:
                 from nodes import CLIPTextEncode
 
@@ -124,13 +124,13 @@ class PromptWithLoraNode(PromptingNode):
                 clean_prompt = strip_lora_tags(prompt)
 
                 # Encode (CLIPTextEncode returns tuple with conditioning as first element)
-                conditioning = CLIPTextEncode().encode(clip, clean_prompt)[0]
+                conditioning = CLIPTextEncode().encode(opt_clip, clean_prompt)[0]
             except Exception as e:
                 print(f"[weirdion_PromptWithLora] Warning: Failed to encode prompt: {e}")
 
         # Return (model, clip, conditioning, text)
         # Text keeps LoRA tags for Image Saver compatibility
-        return (model, clip, conditioning, prompt)
+        return (opt_model, opt_clip, conditioning, prompt)
 
     @staticmethod
     def _resolve_lora_name(name: str) -> str:

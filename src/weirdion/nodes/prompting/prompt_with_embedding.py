@@ -42,7 +42,7 @@ class PromptWithEmbeddingNode(PromptingNode):
                 "insert_embedding": (embedding_choices,),
             },
             "optional": {
-                "clip": ("CLIP",),
+                "opt_clip": ("CLIP",),
             },
         }
 
@@ -60,7 +60,7 @@ class PromptWithEmbeddingNode(PromptingNode):
         self,
         prompt: str,
         insert_embedding: str,
-        clip: Any | None = None,
+        opt_clip: Any | None = None,
     ) -> NodeOutput:
         """
         Process the prompt and optionally encode to CONDITIONING.
@@ -69,11 +69,11 @@ class PromptWithEmbeddingNode(PromptingNode):
         The dropdown is used by the UI to insert text into the prompt field.
         """
         conditioning = None
-        if clip is not None:
+        if opt_clip is not None:
             try:
                 from nodes import CLIPTextEncode
 
-                conditioning = CLIPTextEncode().encode(clip, prompt)[0]
+                conditioning = CLIPTextEncode().encode(opt_clip, prompt)[0]
             except Exception as e:
                 print(f"[weirdion_PromptWithEmbedding] Warning: Failed to encode prompt: {e}")
 

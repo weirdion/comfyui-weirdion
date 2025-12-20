@@ -1,3 +1,5 @@
 """Loader nodes for models, checkpoints, and resources."""
 
-__all__: list[str] = []
+from .load_checkpoint import LoadCheckpointNode
+
+__all__ = ["LoadCheckpointNode"]

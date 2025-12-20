@@ -131,6 +131,7 @@ def test_my_node_basic():
 
 ## Available Nodes
 
+- **Load Checkpoint w/ Overrides (weirdion_LoadCheckpointWithOverrides)**: Load a checkpoint with optional CLIP/VAE overrides
 ## Contributing
 
 This is a personal repository, but issues and PRs are welcome if they align with the project philosophy.

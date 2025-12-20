@@ -18,7 +18,7 @@ def test_prompt_with_embedding_input_spec() -> None:
     assert "insert_embedding" in spec["required"]
 
     assert "optional" in spec
-    assert "clip" in spec["optional"]
+    assert "opt_clip" in spec["optional"]
 
 
 def test_prompt_with_embedding_return_types() -> None:

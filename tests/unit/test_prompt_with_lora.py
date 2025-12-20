@@ -19,8 +19,8 @@ def test_prompt_with_lora_input_spec() -> None:
     assert "insert_embedding" in spec["required"]
 
     assert "optional" in spec
-    assert "model" in spec["optional"]
-    assert "clip" in spec["optional"]
+    assert "opt_model" in spec["optional"]
+    assert "opt_clip" in spec["optional"]
 
 
 def test_prompt_with_lora_return_types() -> None:
