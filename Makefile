@@ -1,4 +1,4 @@
-.PHONY: help setup test lint format type-check clean dev-install checks
+.PHONY: help setup test lint format type-check clean dev-install checks requirements
 
 help:
 	@echo "ComfyUI weirdion - Development Commands"
@@ -14,6 +14,7 @@ help:
 	@echo "  make type-check   - Run mypy type checking"
 	@echo "  make clean        - Remove build artifacts"
 	@echo "  make checks       - Run all checks (format, lint, type-check, test)"
+	@echo "  make requirements - Export runtime dependencies to requirements.txt"
 	@echo ""
 
 setup:
@@ -45,3 +46,6 @@ clean:
 	rm -rf build/ dist/
 
 checks: format lint type-check test
+
+requirements:
+	@python scripts/export_requirements.py
