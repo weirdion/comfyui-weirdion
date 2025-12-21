@@ -23,15 +23,21 @@ function updateNoteSize(node) {
     const height = Math.max(noteEl.scrollHeight, NOTE_MIN_HEIGHT);
     noteEl.style.height = `${height}px`;
 
+    if (noteWidget) {
+        noteWidget.computedHeight = height;
+        noteWidget.computeSize = () => [node.size[0], height];
+    }
+
     requestAnimationFrame(() => {
         const size = node.computeSize();
-        if (size[0] < node.size[0]) {
-            size[0] = node.size[0];
+        size[0] = Math.max(size[0], node.size[0]);
+        size[1] = Math.max(size[1], node.size[1]);
+        if (typeof node.setSize === "function") {
+            node.setSize(size);
+        } else {
+            node.size = size;
+            node.onResize?.(size);
         }
-        if (size[1] < node.size[1]) {
-            size[1] = node.size[1];
-        }
-        node.onResize?.(size);
         app.graph.setDirtyCanvas(true, false);
     });
 }
