@@ -10,8 +10,9 @@ const UNSAVED_SUFFIX = " (unsaved)";
 const API_URL = "/weirdion/profiles";
 const CSS_URL = "/extensions/comfyui-weirdion/weirdion_profile_manager.css";
 const PARAM_WIDGET_NAMES = ["steps", "cfg", "sampler", "scheduler", "denoise", "clip_skip"];
-const NOTE_MIN_HEIGHT = 56;
+const NOTE_DEFAULT_HEIGHT = 120;
 const PROFILE_NODES = ["weirdion_LoadProfileInputParameters", "weirdion_LoadCheckpointWithProfiles"];
+const PROFILE_NODE_INSTANCES = new Set();
 
 function configureProfileWidget(node, widget) {
     if (widget._weirdionConfigured) {
@@ -37,34 +38,94 @@ function configureProfileWidget(node, widget) {
     widget._weirdionConfigured = true;
 }
 
-function updateNoteSize(node) {
+function setNoteHeight(node) {
     const noteWidget = node?._weirdionNoteWidget;
     const noteEl = noteWidget?.inputEl;
-    if (!noteEl) {
+    if (!noteEl || !noteWidget) {
         return;
     }
 
-    noteEl.style.height = "auto";
-    const height = Math.max(noteEl.scrollHeight, NOTE_MIN_HEIGHT);
-    noteEl.style.height = `${height}px`;
-
-    if (noteWidget) {
-        noteWidget.computedHeight = height;
-        noteWidget.computeSize = () => [node.size[0], height];
-    }
+    noteEl.style.height = `${NOTE_DEFAULT_HEIGHT}px`;
+    noteWidget.computedHeight = NOTE_DEFAULT_HEIGHT;
+    noteWidget.computeSize = () => [node.size[0], NOTE_DEFAULT_HEIGHT];
 
     requestAnimationFrame(() => {
-        const size = node.computeSize();
-        size[0] = Math.max(size[0], node.size[0]);
-        size[1] = Math.max(size[1], node.size[1]);
         if (typeof node.setSize === "function") {
-            node.setSize(size);
+            node.setSize([node.size[0], node.computeSize()[1]]);
         } else {
-            node.size = size;
-            node.onResize?.(size);
+            node.size = [node.size[0], node.computeSize()[1]];
+            node.onResize?.(node.size);
         }
         app.graph.setDirtyCanvas(true, false);
     });
+}
+
+function isProfileDirty(node, profileData) {
+    if (!profileData) {
+        return false;
+    }
+
+    const getWidget = (name) => node.widgets?.find((w) => w.name === name);
+    const stepsWidget = getWidget("steps");
+    const cfgWidget = getWidget("cfg");
+    const samplerWidget = getWidget("sampler");
+    const schedulerWidget = getWidget("scheduler");
+    const denoiseWidget = getWidget("denoise");
+    const clipSkipWidget = getWidget("clip_skip");
+
+    const steps = stepsWidget ? Number.parseInt(stepsWidget.value, 10) : null;
+    const cfg = cfgWidget ? Number.parseFloat(cfgWidget.value) : null;
+    const sampler = samplerWidget?.value ?? null;
+    const scheduler = schedulerWidget?.value ?? null;
+    const denoise = denoiseWidget ? Number.parseFloat(denoiseWidget.value) : null;
+    const clipSkip = clipSkipWidget ? Number.parseInt(clipSkipWidget.value, 10) : null;
+
+    const epsilon = 1e-6;
+    if (steps !== null && steps !== Number.parseInt(profileData.steps, 10)) {
+        return true;
+    }
+    if (cfg !== null && Math.abs(cfg - Number.parseFloat(profileData.cfg)) > epsilon) {
+        return true;
+    }
+    if (sampler !== null && sampler !== profileData.sampler) {
+        return true;
+    }
+    if (scheduler !== null && scheduler !== profileData.scheduler) {
+        return true;
+    }
+    if (denoise !== null && Math.abs(denoise - Number.parseFloat(profileData.denoise)) > epsilon) {
+        return true;
+    }
+    if (clipSkip !== null && clipSkip !== Number.parseInt(profileData.clip_skip, 10)) {
+        return true;
+    }
+    return false;
+}
+
+function syncProfileState(node) {
+    const data = window.weirdionProfileData;
+    if (!data) {
+        return;
+    }
+
+    const profileWidget = node.widgets?.find((w) => w.name === "profile");
+    if (!profileWidget) {
+        return;
+    }
+    configureProfileWidget(node, profileWidget);
+
+    const checkpointWidget = node.widgets?.find((w) => w.name === "checkpoint_name" || w.name === "checkpoint");
+    const hasCheckpoint = Boolean(checkpointWidget);
+    const checkpointName =
+        checkpointWidget?.value === "Select Checkpoint" ? "" : checkpointWidget?.value || "";
+
+    const baseProfile =
+        node._weirdionProfileValue || stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+
+    const profileData = resolveProfileData(data, checkpointName, baseProfile, hasCheckpoint);
+    node._weirdionProfileDirty = isProfileDirty(node, profileData);
+    node._weirdionProfileBase = baseProfile;
+    applyProfileFilters(node);
 }
 
 function addProfileNoteWidget(node) {
@@ -88,13 +149,12 @@ function addProfileNoteWidget(node) {
             },
             setValue(value) {
                 bodyEl.textContent = value || "";
-                updateNoteSize(node);
             },
             serialize: false,
         });
         widget.inputEl = noteEl;
         node._weirdionNoteWidget = widget;
-        updateNoteSize(node);
+        setNoteHeight(node);
         return widget;
     }
 
@@ -105,7 +165,7 @@ function addProfileNoteWidget(node) {
     }
     fallback.serializeValue = () => "";
     node._weirdionNoteWidget = fallback;
-    updateNoteSize(node);
+    setNoteHeight(node);
     return fallback;
 }
 
@@ -744,7 +804,6 @@ function applyProfileFilters(node) {
         }
     } finally {
         node._weirdionCheckpointName = checkpointName;
-        updateNoteSize(node);
         node._weirdionApplying = wasApplying;
     }
 }
@@ -757,6 +816,7 @@ app.registerExtension({
 
         try {
             window.weirdionProfileData = await fetchProfiles();
+            PROFILE_NODE_INSTANCES.forEach((node) => syncProfileState(node));
         } catch (error) {
             console.warn("[weirdion] Failed to preload profiles", error);
         }
@@ -764,6 +824,7 @@ app.registerExtension({
         window.addEventListener("weirdion:profiles-updated", async () => {
             try {
                 window.weirdionProfileData = await fetchProfiles();
+                PROFILE_NODE_INSTANCES.forEach((node) => syncProfileState(node));
             } catch (error) {
                 console.warn("[weirdion] Failed to refresh profiles", error);
             }
@@ -780,6 +841,7 @@ app.registerExtension({
             const result = onNodeCreated?.apply(this, arguments);
 
             addProfileNoteWidget(this);
+            PROFILE_NODE_INSTANCES.add(this);
 
             const checkpointWidget = this.widgets?.find((w) => w.name === "checkpoint_name" || w.name === "checkpoint");
             if (checkpointWidget) {
@@ -841,6 +903,13 @@ app.registerExtension({
             this._weirdionProfileDirty = false;
             this._weirdionProfileBase = DEFAULT_PROFILE_NAME;
             applyProfileFilters(this);
+
+            const originalConfigure = this.onConfigure;
+            this.onConfigure = function () {
+                const result = originalConfigure?.apply(this, arguments);
+                requestAnimationFrame(() => syncProfileState(this));
+                return result;
+            };
             return result;
         };
     },

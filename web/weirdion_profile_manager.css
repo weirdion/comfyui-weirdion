@@ -206,10 +206,14 @@
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.25);
     padding: 8px 10px;
-    min-height: 56px;
+    min-height: 120px;
+    max-height: 120px;
+    overflow: hidden;
     color: var(--fg-color, #ddd);
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .weirdion-profile-note-title {
@@ -225,6 +229,8 @@
     line-height: 1.4;
     white-space: pre-wrap;
     word-break: break-word;
+    overflow: auto;
+    flex: 1;
 }
 
 .weirdion-profile-note-input {
@@ -235,6 +241,10 @@
     padding: 8px 10px;
     font-size: 12px;
     line-height: 1.4;
+    min-height: 120px;
+    max-height: 120px;
+    overflow: auto;
+    box-sizing: border-box;
 }
 
 .weirdion-profile-footer {
