@@ -28,18 +28,17 @@ def test_load_checkpoint_with_profiles_return_types() -> None:
     """Test that return types are correctly defined."""
     types = LoadCheckpointWithProfilesNode.get_return_types()
 
-    assert len(types) == 13
+    assert len(types) == 12
     assert types[0] == "MODEL"
     assert types[1] == "CLIP"
     assert types[2] == "VAE"
     assert types[3] == "STRING"
-    assert types[4] == "STRING"
-    assert types[5] == "INT"
-    assert types[6] == "FLOAT"
-    assert types[8] == "STRING"
-    assert types[10] == "STRING"
-    assert types[11] == "INT"
-    assert types[12] == "FLOAT"
+    assert types[4] == "INT"
+    assert types[5] == "FLOAT"
+    assert types[7] == "STRING"
+    assert types[9] == "STRING"
+    assert types[10] == "INT"
+    assert types[11] == "FLOAT"
 
 
 def test_load_checkpoint_with_profiles_return_names() -> None:
@@ -51,7 +50,6 @@ def test_load_checkpoint_with_profiles_return_names() -> None:
         "clip",
         "vae",
         "model_name",
-        "clip_skip_value",
         "steps",
         "cfg",
         "sampler",

@@ -27,7 +27,6 @@ class LoadCheckpointWithProfilesNode(LoaderNode):
         "CLIP (text encoder, after clip skip)",
         "VAE (latent/pixel conversion)",
         "Checkpoint name",
-        "Clip skip value (string)",
         "Steps",
         "CFG",
         "Sampler (for KSampler)",
@@ -127,7 +126,6 @@ class LoadCheckpointWithProfilesNode(LoaderNode):
             "CLIP",
             "VAE",
             "STRING",
-            "STRING",
             "INT",
             "FLOAT",
             sampler_types,
@@ -146,7 +144,6 @@ class LoadCheckpointWithProfilesNode(LoaderNode):
             "clip",
             "vae",
             "model_name",
-            "clip_skip_value",
             "steps",
             "cfg",
             "sampler",
@@ -181,7 +178,7 @@ class LoadCheckpointWithProfilesNode(LoaderNode):
             allow_checkpoint_default=True,
         )
 
-        model, clip, vae, model_name, clip_skip_value = load_checkpoint_with_clip_skip(
+        model, clip, vae, model_name, _clip_skip_value = load_checkpoint_with_clip_skip(
             checkpoint,
             int(clip_skip),
             opt_clip=opt_clip,
@@ -193,7 +190,6 @@ class LoadCheckpointWithProfilesNode(LoaderNode):
             clip,
             vae,
             model_name,
-            clip_skip_value,
             int(steps),
             float(cfg),
             sampler,
