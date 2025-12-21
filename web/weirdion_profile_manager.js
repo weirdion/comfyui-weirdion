@@ -10,6 +10,31 @@ const UNSAVED_SUFFIX = " (unsaved)";
 const API_URL = "/weirdion/profiles";
 const CSS_URL = "/extensions/comfyui-weirdion/weirdion_profile_manager.css";
 const PARAM_WIDGET_NAMES = ["steps", "cfg", "sampler", "scheduler", "denoise", "clip_skip"];
+const NOTE_MIN_HEIGHT = 56;
+
+function updateNoteSize(node) {
+    const noteWidget = node?._weirdionNoteWidget;
+    const noteEl = noteWidget?.inputEl;
+    if (!noteEl) {
+        return;
+    }
+
+    noteEl.style.height = "auto";
+    const height = Math.max(noteEl.scrollHeight, NOTE_MIN_HEIGHT);
+    noteEl.style.height = `${height}px`;
+
+    requestAnimationFrame(() => {
+        const size = node.computeSize();
+        if (size[0] < node.size[0]) {
+            size[0] = node.size[0];
+        }
+        if (size[1] < node.size[1]) {
+            size[1] = node.size[1];
+        }
+        node.onResize?.(size);
+        app.graph.setDirtyCanvas(true, false);
+    });
+}
 
 function addProfileNoteWidget(node) {
     if (typeof node.addDOMWidget === "function") {
@@ -32,10 +57,13 @@ function addProfileNoteWidget(node) {
             },
             setValue(value) {
                 bodyEl.textContent = value || "";
+                updateNoteSize(node);
             },
             serialize: false,
         });
         widget.inputEl = noteEl;
+        node._weirdionNoteWidget = widget;
+        updateNoteSize(node);
         return widget;
     }
 
@@ -45,6 +73,8 @@ function addProfileNoteWidget(node) {
         fallback.inputEl.classList.add("weirdion-profile-note-input");
     }
     fallback.serializeValue = () => "";
+    node._weirdionNoteWidget = fallback;
+    updateNoteSize(node);
     return fallback;
 }
 
@@ -671,10 +701,10 @@ function applyProfileFilters(node) {
         }
         profileWidget.options.values = unique;
 
-        const noteWidget = node.widgets?.find((w) => w.name === "profile_note");
-        if (noteWidget) {
-            noteWidget.value = resolveProfileNote(data, checkpointName, baseProfile);
-        }
+    const noteWidget = node.widgets?.find((w) => w.name === "profile_note");
+    if (noteWidget) {
+        noteWidget.value = resolveProfileNote(data, checkpointName, baseProfile);
+    }
 
         if (!node._weirdionProfileDirty) {
             const profileData = resolveProfileData(data, checkpointName, baseProfile);
@@ -682,6 +712,7 @@ function applyProfileFilters(node) {
         }
     } finally {
         node._weirdionCheckpointName = checkpointName;
+        updateNoteSize(node);
         node._weirdionApplying = wasApplying;
     }
 }

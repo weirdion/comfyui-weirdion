@@ -208,6 +208,8 @@
     padding: 8px 10px;
     min-height: 56px;
     color: var(--fg-color, #ddd);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .weirdion-profile-note-title {
@@ -222,6 +224,7 @@
     font-size: 12px;
     line-height: 1.4;
     white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .weirdion-profile-note-input {
