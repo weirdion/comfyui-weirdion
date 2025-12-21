@@ -11,6 +11,43 @@ const API_URL = "/weirdion/profiles";
 const CSS_URL = "/extensions/comfyui-weirdion/weirdion_profile_manager.css";
 const PARAM_WIDGET_NAMES = ["steps", "cfg", "sampler", "scheduler", "denoise", "clip_skip"];
 
+function addProfileNoteWidget(node) {
+    if (typeof node.addDOMWidget === "function") {
+        const noteEl = document.createElement("div");
+        noteEl.className = "weirdion-profile-note-widget";
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "weirdion-profile-note-title";
+        titleEl.textContent = "Profile note";
+
+        const bodyEl = document.createElement("div");
+        bodyEl.className = "weirdion-profile-note-body";
+
+        noteEl.appendChild(titleEl);
+        noteEl.appendChild(bodyEl);
+
+        const widget = node.addDOMWidget("profile_note", "weirdionNote", noteEl, {
+            getValue() {
+                return bodyEl.textContent || "";
+            },
+            setValue(value) {
+                bodyEl.textContent = value || "";
+            },
+            serialize: false,
+        });
+        widget.inputEl = noteEl;
+        return widget;
+    }
+
+    const fallback = node.addWidget("text", "profile_note", "", () => {});
+    if (fallback?.inputEl) {
+        fallback.inputEl.disabled = true;
+        fallback.inputEl.classList.add("weirdion-profile-note-input");
+    }
+    fallback.serializeValue = () => "";
+    return fallback;
+}
+
 function stripUnsaved(name) {
     if (!name) {
         return "";
@@ -580,13 +617,22 @@ function applyProfileFilters(node) {
     const checkpointName =
         checkpointWidget?.value === "Select Checkpoint" ? "" : checkpointWidget?.value || "";
     const data = window.weirdionProfileData;
-    const baseProfile = node._weirdionProfileDirty
-        ? node._weirdionProfileBase || DEFAULT_PROFILE_NAME
-        : stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+    const checkpointChanged = node._weirdionCheckpointName !== checkpointName;
+    let baseProfile = node._weirdionProfileBase || stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
     const wasApplying = node._weirdionApplying;
     node._weirdionApplying = true;
 
     try {
+        if (!node._weirdionProfileDirty && checkpointChanged && data) {
+            const mapped = data.checkpoint_defaults?.[checkpointName];
+            if (mapped && data.profiles?.[mapped]) {
+                baseProfile = mapped;
+            } else {
+                baseProfile = DEFAULT_PROFILE_NAME;
+            }
+            node._weirdionProfileBase = baseProfile;
+        }
+
         if (!data) {
             profileWidget.options.values = [DEFAULT_PROFILE_NAME];
             profileWidget.value = DEFAULT_PROFILE_NAME;
@@ -603,6 +649,10 @@ function applyProfileFilters(node) {
 
         const values = [DEFAULT_PROFILE_NAME, ...associated, ...unassigned];
         let unique = Array.from(new Set(values));
+
+        if (!unique.includes(baseProfile) && baseProfile !== DEFAULT_PROFILE_NAME) {
+            unique = [baseProfile, ...unique];
+        }
 
         if (node._weirdionProfileDirty) {
             const unsaved = toUnsaved(baseProfile);
@@ -631,6 +681,7 @@ function applyProfileFilters(node) {
             setProfileValues(node, profileData);
         }
     } finally {
+        node._weirdionCheckpointName = checkpointName;
         node._weirdionApplying = wasApplying;
     }
 }
@@ -665,11 +716,7 @@ app.registerExtension({
         nodeType.prototype.onNodeCreated = function () {
             const result = onNodeCreated?.apply(this, arguments);
 
-            const noteWidget = this.addWidget("text", "profile_note", "", () => {});
-            if (noteWidget?.inputEl) {
-                noteWidget.inputEl.disabled = true;
-            }
-            noteWidget.serializeValue = () => "";
+            addProfileNoteWidget(this);
 
             const checkpointWidget = this.widgets?.find((w) => w.name === "checkpoint_name");
             if (checkpointWidget) {
@@ -683,9 +730,6 @@ app.registerExtension({
                         return;
                     }
                     node._weirdionProfileDirty = false;
-                    node._weirdionProfileBase = stripUnsaved(
-                        node.widgets?.find((w) => w.name === "profile")?.value || DEFAULT_PROFILE_NAME
-                    );
                     applyProfileFilters(node);
                 };
             }

@@ -201,6 +201,39 @@
     opacity: 0.8;
 }
 
+.weirdion-profile-note-widget {
+    border: 1px solid var(--border-color, #444);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 8px 10px;
+    min-height: 56px;
+    color: var(--fg-color, #ddd);
+}
+
+.weirdion-profile-note-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+    margin-bottom: 6px;
+}
+
+.weirdion-profile-note-body {
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
+
+.weirdion-profile-note-input {
+    border: 1px solid var(--border-color, #444);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--fg-color, #ddd);
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
 .weirdion-profile-footer {
     position: absolute;
     top: 10px;
