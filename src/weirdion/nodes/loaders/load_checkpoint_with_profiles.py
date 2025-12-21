@@ -1,26 +1,33 @@
 """
-Load Profile Input Parameters node.
+Load Checkpoint with Profiles node.
 
-Loads generation parameters from a named profile, keyed by checkpoint.
+Loads a checkpoint, applies CLIP skip, and outputs profile-driven parameters.
 """
 
 from typing import Any
 
 from ...core import LoaderNode, register_node
 from ...types import ComfyReturnType, InputSpec, NodeOutput
+from ...utils.checkpoint_loader import load_checkpoint_with_clip_skip
 from ...utils.profile_store import DEFAULT_PROFILE_NAME, load_default_profile, load_user_profiles, resolve_profile
 
 
 @register_node(
-    name="weirdion_LoadProfileInputParameters",
-    display_name="Load Profile Input Parameters (weirdion)",
+    name="weirdion_LoadCheckpointWithProfiles",
+    display_name="Load Checkpoint w/ Profiles (weirdion)",
 )
-class LoadProfileInputParametersNode(LoaderNode):
-    """Load generation parameters from a saved profile."""
+class LoadCheckpointWithProfilesNode(LoaderNode):
+    """Load a checkpoint and profile-driven generation parameters."""
 
-    DESCRIPTION = "Load generation parameters from a profile."
+    DESCRIPTION = "Load a checkpoint and profile-driven generation parameters in one node."
+    CHECKPOINT_PLACEHOLDER = "Select Checkpoint"
     UNSAVED_SUFFIX = " (unsaved)"
     OUTPUT_TOOLTIPS = (
+        "U-Net model (denoising latents)",
+        "CLIP (text encoder, after clip skip)",
+        "VAE (latent/pixel conversion)",
+        "Checkpoint name",
+        "Clip skip value (string)",
         "Steps",
         "CFG",
         "Sampler (for KSampler)",
@@ -33,13 +40,25 @@ class LoadProfileInputParametersNode(LoaderNode):
 
     @classmethod
     def get_input_spec(cls) -> InputSpec:
-        """Define inputs: checkpoint name and profile selection."""
+        """Define inputs: checkpoint, profile, parameters, and optional overrides."""
         profiles = cls._get_profile_names()
         sampler_types, scheduler_types = cls._get_sampler_scheduler_types()
         default_profile = cls._get_default_profile()
 
+        try:
+            import folder_paths
+
+            ckpt_list = folder_paths.get_filename_list("checkpoints")
+            ckpt_choices = [cls.CHECKPOINT_PLACEHOLDER] + ckpt_list
+        except Exception:
+            ckpt_choices = [cls.CHECKPOINT_PLACEHOLDER]
+
         return {
             "required": {
+                "checkpoint": (
+                    ckpt_choices,
+                    {"default": cls.CHECKPOINT_PLACEHOLDER, "tooltip": "Checkpoint to load"},
+                ),
                 "profile": (
                     profiles,
                     {"default": DEFAULT_PROFILE_NAME, "tooltip": "Profile to apply"},
@@ -93,13 +112,22 @@ class LoadProfileInputParametersNode(LoaderNode):
                     },
                 ),
             },
+            "optional": {
+                "opt_clip": ("CLIP", {"tooltip": "Optional CLIP override"}),
+                "opt_vae": ("VAE", {"tooltip": "Optional VAE override"}),
+            },
         }
 
     @classmethod
     def get_return_types(cls) -> tuple[ComfyReturnType, ...]:
-        """Returns generation parameters."""
+        """Returns checkpoint outputs plus generation parameters."""
         sampler_types, scheduler_types = cls._get_sampler_scheduler_types()
         return (
+            "MODEL",
+            "CLIP",
+            "VAE",
+            "STRING",
+            "STRING",
             "INT",
             "FLOAT",
             sampler_types,
@@ -114,6 +142,11 @@ class LoadProfileInputParametersNode(LoaderNode):
     def get_return_names(cls) -> tuple[str, ...]:
         """Name the outputs."""
         return (
+            "model",
+            "clip",
+            "vae",
+            "model_name",
+            "clip_skip_value",
             "steps",
             "cfg",
             "sampler",
@@ -126,6 +159,7 @@ class LoadProfileInputParametersNode(LoaderNode):
 
     def process(
         self,
+        checkpoint: str,
         profile: str,
         steps: int,
         cfg: float,
@@ -133,12 +167,33 @@ class LoadProfileInputParametersNode(LoaderNode):
         scheduler: str,
         denoise: float,
         clip_skip: int,
+        opt_clip: Any | None = None,
+        opt_vae: Any | None = None,
     ) -> NodeOutput:
-        """Resolve and return parameters for the selected profile."""
+        """Load checkpoint and return profile-driven parameters."""
+        if not checkpoint or checkpoint == self.CHECKPOINT_PLACEHOLDER:
+            raise ValueError("checkpoint is required")
+
         normalized_profile = self._normalize_profile_name(profile)
-        resolve_profile(normalized_profile, allow_checkpoint_default=False)
+        resolve_profile(
+            normalized_profile,
+            checkpoint_name=checkpoint,
+            allow_checkpoint_default=True,
+        )
+
+        model, clip, vae, model_name, clip_skip_value = load_checkpoint_with_clip_skip(
+            checkpoint,
+            int(clip_skip),
+            opt_clip=opt_clip,
+            opt_vae=opt_vae,
+        )
 
         return (
+            model,
+            clip,
+            vae,
+            model_name,
+            clip_skip_value,
             int(steps),
             float(cfg),
             sampler,

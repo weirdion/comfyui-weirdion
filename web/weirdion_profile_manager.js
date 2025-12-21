@@ -11,6 +11,7 @@ const API_URL = "/weirdion/profiles";
 const CSS_URL = "/extensions/comfyui-weirdion/weirdion_profile_manager.css";
 const PARAM_WIDGET_NAMES = ["steps", "cfg", "sampler", "scheduler", "denoise", "clip_skip"];
 const NOTE_MIN_HEIGHT = 56;
+const PROFILE_NODES = ["weirdion_LoadProfileInputParameters", "weirdion_LoadCheckpointWithProfiles"];
 
 function updateNoteSize(node) {
     const noteWidget = node?._weirdionNoteWidget;
@@ -157,16 +158,18 @@ function normalizeProfile(profile) {
     };
 }
 
-function resolveProfileData(data, checkpointName, profileName) {
+function resolveProfileData(data, checkpointName, profileName, allowCheckpointDefaults) {
     if (!data) {
         return null;
     }
 
     const baseName = stripUnsaved(profileName || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
     if (baseName === DEFAULT_PROFILE_NAME) {
-        const mapped = data.checkpoint_defaults?.[checkpointName];
-        if (mapped && data.profiles?.[mapped]) {
-            return normalizeProfile(data.profiles[mapped]);
+        if (allowCheckpointDefaults) {
+            const mapped = data.checkpoint_defaults?.[checkpointName];
+            if (mapped && data.profiles?.[mapped]) {
+                return normalizeProfile(data.profiles[mapped]);
+            }
         }
         return normalizeProfile(data.default_profile || {});
     }
@@ -175,8 +178,8 @@ function resolveProfileData(data, checkpointName, profileName) {
     return profile ? normalizeProfile(profile) : null;
 }
 
-function resolveProfileNote(data, checkpointName, profileName) {
-    const profileData = resolveProfileData(data, checkpointName, profileName);
+function resolveProfileNote(data, checkpointName, profileName, allowCheckpointDefaults) {
+    const profileData = resolveProfileData(data, checkpointName, profileName, allowCheckpointDefaults);
     return profileData?.note || "";
 }
 
@@ -649,17 +652,19 @@ function applyProfileFilters(node) {
         return;
     }
 
-    const checkpointWidget = node.widgets?.find((w) => w.name === "checkpoint_name");
+    const checkpointWidget = node.widgets?.find((w) => w.name === "checkpoint_name" || w.name === "checkpoint");
+    const hasCheckpoint = Boolean(checkpointWidget);
     const checkpointName =
         checkpointWidget?.value === "Select Checkpoint" ? "" : checkpointWidget?.value || "";
     const data = window.weirdionProfileData;
     const checkpointChanged = node._weirdionCheckpointName !== checkpointName;
-    let baseProfile = node._weirdionProfileBase || stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+    let baseProfile =
+        node._weirdionProfileBase || stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
     const wasApplying = node._weirdionApplying;
     node._weirdionApplying = true;
 
     try {
-        if (!node._weirdionProfileDirty && checkpointChanged && data) {
+        if (!node._weirdionProfileDirty && checkpointChanged && data && hasCheckpoint) {
             const mapped = data.checkpoint_defaults?.[checkpointName];
             if (mapped && data.profiles?.[mapped]) {
                 baseProfile = mapped;
@@ -676,14 +681,17 @@ function applyProfileFilters(node) {
         }
 
         const profiles = data.profiles || {};
-        const associated = Object.keys(profiles).filter((name) =>
-            (profiles[name].checkpoints || []).includes(checkpointName)
-        );
-        const unassigned = Object.keys(profiles).filter(
-            (name) => (profiles[name].checkpoints || []).length === 0
-        );
-
-        const values = [DEFAULT_PROFILE_NAME, ...associated, ...unassigned];
+        const values = hasCheckpoint
+            ? [
+                  DEFAULT_PROFILE_NAME,
+                  ...Object.keys(profiles).filter((name) =>
+                      (profiles[name].checkpoints || []).includes(checkpointName)
+                  ),
+                  ...Object.keys(profiles).filter(
+                      (name) => (profiles[name].checkpoints || []).length === 0
+                  ),
+              ]
+            : [DEFAULT_PROFILE_NAME, ...Object.keys(profiles).sort()];
         let unique = Array.from(new Set(values));
 
         if (!unique.includes(baseProfile) && baseProfile !== DEFAULT_PROFILE_NAME) {
@@ -707,13 +715,13 @@ function applyProfileFilters(node) {
         }
         profileWidget.options.values = unique;
 
-    const noteWidget = node.widgets?.find((w) => w.name === "profile_note");
-    if (noteWidget) {
-        noteWidget.value = resolveProfileNote(data, checkpointName, baseProfile);
-    }
+        const noteWidget = node.widgets?.find((w) => w.name === "profile_note");
+        if (noteWidget) {
+            noteWidget.value = resolveProfileNote(data, checkpointName, baseProfile, hasCheckpoint);
+        }
 
         if (!node._weirdionProfileDirty) {
-            const profileData = resolveProfileData(data, checkpointName, baseProfile);
+            const profileData = resolveProfileData(data, checkpointName, baseProfile, hasCheckpoint);
             setProfileValues(node, profileData);
         }
     } finally {
@@ -745,7 +753,7 @@ app.registerExtension({
     },
 
     async beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== "weirdion_LoadProfileInputParameters") {
+        if (!PROFILE_NODES.includes(nodeData.name)) {
             return;
         }
 
@@ -755,7 +763,7 @@ app.registerExtension({
 
             addProfileNoteWidget(this);
 
-            const checkpointWidget = this.widgets?.find((w) => w.name === "checkpoint_name");
+            const checkpointWidget = this.widgets?.find((w) => w.name === "checkpoint_name" || w.name === "checkpoint");
             if (checkpointWidget) {
                 const originalCallback = checkpointWidget.callback;
                 const node = this;

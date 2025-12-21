@@ -9,7 +9,6 @@ def test_load_profile_input_parameters_input_spec() -> None:
 
     assert "required" in spec
     required = spec["required"]
-    assert "checkpoint_name" in required
     assert "profile" in required
     assert "steps" in required
     assert "cfg" in required
@@ -23,14 +22,13 @@ def test_load_profile_input_parameters_return_types() -> None:
     """Test that return types are correctly defined."""
     types = LoadProfileInputParametersNode.get_return_types()
 
-    assert len(types) == 9
-    assert types[0] == "STRING"
-    assert types[1] == "INT"
-    assert types[2] == "FLOAT"
-    assert types[4] == "STRING"
-    assert types[6] == "STRING"
-    assert types[7] == "INT"
-    assert types[8] == "FLOAT"
+    assert len(types) == 8
+    assert types[0] == "INT"
+    assert types[1] == "FLOAT"
+    assert types[3] == "STRING"
+    assert types[5] == "STRING"
+    assert types[6] == "INT"
+    assert types[7] == "FLOAT"
 
 
 def test_load_profile_input_parameters_return_names() -> None:
@@ -38,7 +36,6 @@ def test_load_profile_input_parameters_return_names() -> None:
     names = LoadProfileInputParametersNode.get_return_names()
 
     assert names == (
-        "checkpoint_name",
         "steps",
         "cfg",
         "sampler",

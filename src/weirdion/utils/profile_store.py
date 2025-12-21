@@ -97,6 +97,32 @@ def load_user_profiles() -> dict[str, Any]:
     return {"profiles": profiles, "checkpoint_defaults": defaults}
 
 
+def resolve_profile(
+    profile_name: str,
+    *,
+    checkpoint_name: str | None = None,
+    allow_checkpoint_default: bool = False,
+) -> tuple[str, dict[str, Any]]:
+    """Resolve a profile name to profile data."""
+    default_profile = load_default_profile()
+    user_data = load_user_profiles()
+    profiles: dict[str, Any] = user_data["profiles"]
+
+    resolved_name = profile_name or DEFAULT_PROFILE_NAME
+    if allow_checkpoint_default and resolved_name == DEFAULT_PROFILE_NAME and checkpoint_name:
+        mapped = user_data["checkpoint_defaults"].get(checkpoint_name)
+        if mapped:
+            resolved_name = mapped
+
+    if resolved_name == DEFAULT_PROFILE_NAME:
+        return (DEFAULT_PROFILE_NAME, default_profile)
+
+    if resolved_name not in profiles:
+        raise ValueError(f"Profile not found: '{resolved_name}'")
+
+    return (resolved_name, profiles[resolved_name])
+
+
 def save_user_profiles(data: dict[str, Any]) -> None:
     """Save user profiles to disk."""
     profiles = data.get("profiles", {})
