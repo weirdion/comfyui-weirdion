@@ -13,6 +13,30 @@ const PARAM_WIDGET_NAMES = ["steps", "cfg", "sampler", "scheduler", "denoise", "
 const NOTE_MIN_HEIGHT = 56;
 const PROFILE_NODES = ["weirdion_LoadProfileInputParameters", "weirdion_LoadCheckpointWithProfiles"];
 
+function configureProfileWidget(node, widget) {
+    if (widget._weirdionConfigured) {
+        return;
+    }
+
+    node._weirdionProfileValue =
+        stripUnsaved(widget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+
+    Object.defineProperty(widget, "value", {
+        get() {
+            const current = node._weirdionProfileValue || DEFAULT_PROFILE_NAME;
+            return node._weirdionProfileDirty ? toUnsaved(current) : current;
+        },
+        set(value) {
+            node._weirdionProfileValue =
+                stripUnsaved(value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+        },
+        configurable: true,
+    });
+
+    widget.serializeValue = () => node._weirdionProfileValue || DEFAULT_PROFILE_NAME;
+    widget._weirdionConfigured = true;
+}
+
 function updateNoteSize(node) {
     const noteWidget = node?._weirdionNoteWidget;
     const noteEl = noteWidget?.inputEl;
@@ -659,7 +683,10 @@ function applyProfileFilters(node) {
     const data = window.weirdionProfileData;
     const checkpointChanged = node._weirdionCheckpointName !== checkpointName;
     let baseProfile =
-        node._weirdionProfileBase || stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+        node._weirdionProfileBase ||
+        node._weirdionProfileValue ||
+        stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) ||
+        DEFAULT_PROFILE_NAME;
     const wasApplying = node._weirdionApplying;
     node._weirdionApplying = true;
 
@@ -698,21 +725,12 @@ function applyProfileFilters(node) {
             unique = [baseProfile, ...unique];
         }
 
-        if (node._weirdionProfileDirty) {
-            const unsaved = toUnsaved(baseProfile);
-            if (!unique.includes(unsaved)) {
-                unique = [unsaved, ...unique];
-            }
-            profileWidget.value = unsaved;
-        } else {
-            if (!unique.includes(baseProfile)) {
-                profileWidget.value = DEFAULT_PROFILE_NAME;
-                node._weirdionProfileBase = DEFAULT_PROFILE_NAME;
-            } else {
-                profileWidget.value = baseProfile;
-                node._weirdionProfileBase = baseProfile;
-            }
+        if (!unique.includes(baseProfile)) {
+            baseProfile = DEFAULT_PROFILE_NAME;
         }
+
+        profileWidget.value = baseProfile;
+        node._weirdionProfileBase = baseProfile;
         profileWidget.options.values = unique;
 
         const noteWidget = node.widgets?.find((w) => w.name === "profile_note");
@@ -781,6 +799,7 @@ app.registerExtension({
 
             const profileWidget = this.widgets?.find((w) => w.name === "profile");
             if (profileWidget) {
+                configureProfileWidget(this, profileWidget);
                 const originalProfileCallback = profileWidget.callback;
                 const node = this;
                 profileWidget.callback = function () {
