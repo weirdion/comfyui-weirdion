@@ -19,6 +19,8 @@ class LoadProfileInputParametersNode(LoaderNode):
     """Load generation parameters from a saved profile."""
 
     DESCRIPTION = "Load generation parameters from a profile based on checkpoint name."
+    CHECKPOINT_PLACEHOLDER = "Select Checkpoint"
+    UNSAVED_SUFFIX = " (unsaved)"
     OUTPUT_TOOLTIPS = (
         "Checkpoint name",
         "Steps",
@@ -35,13 +37,74 @@ class LoadProfileInputParametersNode(LoaderNode):
     def get_input_spec(cls) -> InputSpec:
         """Define inputs: checkpoint name and profile selection."""
         profiles = cls._get_profile_names()
+        sampler_types, scheduler_types = cls._get_sampler_scheduler_types()
+        default_profile = cls._get_default_profile()
+
+        try:
+            import folder_paths
+
+            ckpt_list = folder_paths.get_filename_list("checkpoints")
+            ckpt_choices = [cls.CHECKPOINT_PLACEHOLDER] + ckpt_list
+        except Exception:
+            ckpt_choices = [cls.CHECKPOINT_PLACEHOLDER]
 
         return {
             "required": {
-                "checkpoint_name": ("STRING", {"default": "", "tooltip": "Checkpoint name to match profiles"}),
+                "checkpoint_name": (
+                    ckpt_choices,
+                    {"default": cls.CHECKPOINT_PLACEHOLDER, "tooltip": "Checkpoint name to match profiles"},
+                ),
                 "profile": (
                     profiles,
                     {"default": DEFAULT_PROFILE_NAME, "tooltip": "Profile to apply"},
+                ),
+                "steps": (
+                    "INT",
+                    {
+                        "default": int(default_profile["steps"]),
+                        "min": 1,
+                        "max": 200,
+                        "step": 1,
+                        "tooltip": "Steps",
+                    },
+                ),
+                "cfg": (
+                    "FLOAT",
+                    {
+                        "default": float(default_profile["cfg"]),
+                        "min": 0.0,
+                        "max": 30.0,
+                        "step": 0.1,
+                        "tooltip": "CFG scale",
+                    },
+                ),
+                "sampler": (
+                    sampler_types,
+                    {"default": default_profile["sampler"], "tooltip": "Sampler"},
+                ),
+                "scheduler": (
+                    scheduler_types,
+                    {"default": default_profile["scheduler"], "tooltip": "Scheduler"},
+                ),
+                "denoise": (
+                    "FLOAT",
+                    {
+                        "default": float(default_profile["denoise"]),
+                        "min": 0.0,
+                        "max": 1.0,
+                        "step": 0.01,
+                        "tooltip": "Denoise strength",
+                    },
+                ),
+                "clip_skip": (
+                    "INT",
+                    {
+                        "default": int(default_profile["clip_skip"]),
+                        "min": -24,
+                        "max": -1,
+                        "step": 1,
+                        "tooltip": "Clip skip",
+                    },
                 ),
             },
         }
@@ -77,44 +140,37 @@ class LoadProfileInputParametersNode(LoaderNode):
             "denoise",
         )
 
-    def process(self, checkpoint_name: str, profile: str) -> NodeOutput:
+    def process(
+        self,
+        checkpoint_name: str,
+        profile: str,
+        steps: int,
+        cfg: float,
+        sampler: str,
+        scheduler: str,
+        denoise: float,
+        clip_skip: int,
+    ) -> NodeOutput:
         """Resolve and return parameters for the selected profile."""
-        if not checkpoint_name:
+        if not checkpoint_name or checkpoint_name == self.CHECKPOINT_PLACEHOLDER:
             raise ValueError("checkpoint_name is required")
 
-        default_profile = load_default_profile()
         user_data = load_user_profiles()
         profiles: dict[str, Any] = user_data["profiles"]
-        checkpoint_defaults: dict[str, str] = user_data["checkpoint_defaults"]
-
-        resolved_name = profile
-        if profile == DEFAULT_PROFILE_NAME:
-            resolved_name = checkpoint_defaults.get(checkpoint_name, DEFAULT_PROFILE_NAME)
-
-        if resolved_name == DEFAULT_PROFILE_NAME:
-            profile_data = default_profile
-        else:
-            if resolved_name not in profiles:
-                raise ValueError(f"Profile not found: '{resolved_name}'")
-            profile_data = profiles[resolved_name]
-
-        steps = int(profile_data["steps"])
-        cfg = float(profile_data["cfg"])
-        sampler = profile_data["sampler"]
-        scheduler = profile_data["scheduler"]
-        clip_skip = int(profile_data["clip_skip"])
-        denoise = float(profile_data["denoise"])
+        normalized_profile = self._normalize_profile_name(profile)
+        if normalized_profile != DEFAULT_PROFILE_NAME and normalized_profile not in profiles:
+            raise ValueError(f"Profile not found: '{normalized_profile}'")
 
         return (
             checkpoint_name,
-            steps,
-            cfg,
+            int(steps),
+            float(cfg),
             sampler,
             sampler,
             scheduler,
             scheduler,
-            clip_skip,
-            denoise,
+            int(clip_skip),
+            float(denoise),
         )
 
     @staticmethod
@@ -135,3 +191,23 @@ class LoadProfileInputParametersNode(LoaderNode):
             return (comfy.samplers.KSampler.SAMPLERS, comfy.samplers.KSampler.SCHEDULERS)
         except Exception:
             return (["euler_ancestral"], ["karras"])
+
+    @staticmethod
+    def _get_default_profile() -> dict[str, Any]:
+        try:
+            return load_default_profile()
+        except Exception:
+            return {
+                "steps": 30,
+                "cfg": 5,
+                "sampler": "euler_ancestral",
+                "scheduler": "karras",
+                "denoise": 1.0,
+                "clip_skip": -2,
+            }
+
+    @classmethod
+    def _normalize_profile_name(cls, profile: str) -> str:
+        if profile.endswith(cls.UNSAVED_SUFFIX):
+            return profile[: -len(cls.UNSAVED_SUFFIX)]
+        return profile or DEFAULT_PROFILE_NAME

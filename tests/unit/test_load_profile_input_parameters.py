@@ -8,8 +8,15 @@ def test_load_profile_input_parameters_input_spec() -> None:
     spec = LoadProfileInputParametersNode.get_input_spec()
 
     assert "required" in spec
-    assert "checkpoint_name" in spec["required"]
-    assert "profile" in spec["required"]
+    required = spec["required"]
+    assert "checkpoint_name" in required
+    assert "profile" in required
+    assert "steps" in required
+    assert "cfg" in required
+    assert "sampler" in required
+    assert "scheduler" in required
+    assert "denoise" in required
+    assert "clip_skip" in required
 
 
 def test_load_profile_input_parameters_return_types() -> None:

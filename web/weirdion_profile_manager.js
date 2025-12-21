@@ -6,8 +6,30 @@ import { app } from "../../scripts/app.js";
 
 const EXTENSION_NAME = "weirdion.ProfileManager";
 const DEFAULT_PROFILE_NAME = "Default";
+const UNSAVED_SUFFIX = " (unsaved)";
 const API_URL = "/weirdion/profiles";
 const CSS_URL = "/extensions/comfyui-weirdion/weirdion_profile_manager.css";
+const PARAM_WIDGET_NAMES = ["steps", "cfg", "sampler", "scheduler", "denoise", "clip_skip"];
+
+function stripUnsaved(name) {
+    if (!name) {
+        return "";
+    }
+    if (name.endsWith(UNSAVED_SUFFIX)) {
+        return name.slice(0, -UNSAVED_SUFFIX.length);
+    }
+    return name;
+}
+
+function toUnsaved(name) {
+    if (!name) {
+        return "";
+    }
+    if (name.endsWith(UNSAVED_SUFFIX)) {
+        return name;
+    }
+    return `${name}${UNSAVED_SUFFIX}`;
+}
 
 function addCssLink(href) {
     if (document.querySelector(`link[href="${href}"]`)) {
@@ -60,6 +82,52 @@ function normalizeProfile(profile) {
         note: profile.note ?? "",
         checkpoints: Array.isArray(profile.checkpoints) ? profile.checkpoints : [],
     };
+}
+
+function resolveProfileData(data, checkpointName, profileName) {
+    if (!data) {
+        return null;
+    }
+
+    const baseName = stripUnsaved(profileName || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+    if (baseName === DEFAULT_PROFILE_NAME) {
+        const mapped = data.checkpoint_defaults?.[checkpointName];
+        if (mapped && data.profiles?.[mapped]) {
+            return normalizeProfile(data.profiles[mapped]);
+        }
+        return normalizeProfile(data.default_profile || {});
+    }
+
+    const profile = data.profiles?.[baseName];
+    return profile ? normalizeProfile(profile) : null;
+}
+
+function resolveProfileNote(data, checkpointName, profileName) {
+    const profileData = resolveProfileData(data, checkpointName, profileName);
+    return profileData?.note || "";
+}
+
+function setProfileValues(node, profileData) {
+    if (!profileData) {
+        return;
+    }
+    const widgets = node.widgets || [];
+    const wasApplying = node._weirdionApplying;
+    node._weirdionApplying = true;
+    PARAM_WIDGET_NAMES.forEach((name) => {
+        const widget = widgets.find((w) => w.name === name);
+        if (!widget) {
+            return;
+        }
+        if (name === "steps" || name === "clip_skip") {
+            widget.value = Number.parseInt(profileData[name], 10);
+        } else if (name === "cfg" || name === "denoise") {
+            widget.value = Number.parseFloat(profileData[name]);
+        } else {
+            widget.value = profileData[name];
+        }
+    });
+    node._weirdionApplying = wasApplying;
 }
 
 class ProfileManagerUI {
@@ -509,51 +577,62 @@ function applyProfileFilters(node) {
     }
 
     const checkpointWidget = node.widgets?.find((w) => w.name === "checkpoint_name");
-    const checkpointName = checkpointWidget?.value || "";
+    const checkpointName =
+        checkpointWidget?.value === "Select Checkpoint" ? "" : checkpointWidget?.value || "";
     const data = window.weirdionProfileData;
+    const baseProfile = node._weirdionProfileDirty
+        ? node._weirdionProfileBase || DEFAULT_PROFILE_NAME
+        : stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
+    const wasApplying = node._weirdionApplying;
+    node._weirdionApplying = true;
 
-    if (!data) {
-        profileWidget.options.values = [DEFAULT_PROFILE_NAME];
-        profileWidget.value = DEFAULT_PROFILE_NAME;
-        return;
-    }
-
-    const profiles = data.profiles || {};
-    const associated = Object.keys(profiles).filter((name) =>
-        (profiles[name].checkpoints || []).includes(checkpointName)
-    );
-    const unassigned = Object.keys(profiles).filter(
-        (name) => (profiles[name].checkpoints || []).length === 0
-    );
-
-    const values = [DEFAULT_PROFILE_NAME, ...associated, ...unassigned];
-    const unique = Array.from(new Set(values));
-
-    profileWidget.options.values = unique;
-    if (!unique.includes(profileWidget.value)) {
-        profileWidget.value = DEFAULT_PROFILE_NAME;
-    }
-
-    const noteWidget = node.widgets?.find((w) => w.name === "profile_note");
-    if (noteWidget) {
-        noteWidget.value = resolveProfileNote(data, checkpointName, profileWidget.value);
-    }
-}
-
-function resolveProfileNote(data, checkpointName, profileName) {
-    if (!data) {
-        return "";
-    }
-
-    if (profileName === DEFAULT_PROFILE_NAME) {
-        const mapped = data.checkpoint_defaults?.[checkpointName];
-        if (mapped && data.profiles?.[mapped]) {
-            return data.profiles[mapped].note || "";
+    try {
+        if (!data) {
+            profileWidget.options.values = [DEFAULT_PROFILE_NAME];
+            profileWidget.value = DEFAULT_PROFILE_NAME;
+            return;
         }
-        return data.default_profile?.note || "";
-    }
 
-    return data.profiles?.[profileName]?.note || "";
+        const profiles = data.profiles || {};
+        const associated = Object.keys(profiles).filter((name) =>
+            (profiles[name].checkpoints || []).includes(checkpointName)
+        );
+        const unassigned = Object.keys(profiles).filter(
+            (name) => (profiles[name].checkpoints || []).length === 0
+        );
+
+        const values = [DEFAULT_PROFILE_NAME, ...associated, ...unassigned];
+        let unique = Array.from(new Set(values));
+
+        if (node._weirdionProfileDirty) {
+            const unsaved = toUnsaved(baseProfile);
+            if (!unique.includes(unsaved)) {
+                unique = [unsaved, ...unique];
+            }
+            profileWidget.value = unsaved;
+        } else {
+            if (!unique.includes(baseProfile)) {
+                profileWidget.value = DEFAULT_PROFILE_NAME;
+                node._weirdionProfileBase = DEFAULT_PROFILE_NAME;
+            } else {
+                profileWidget.value = baseProfile;
+                node._weirdionProfileBase = baseProfile;
+            }
+        }
+        profileWidget.options.values = unique;
+
+        const noteWidget = node.widgets?.find((w) => w.name === "profile_note");
+        if (noteWidget) {
+            noteWidget.value = resolveProfileNote(data, checkpointName, baseProfile);
+        }
+
+        if (!node._weirdionProfileDirty) {
+            const profileData = resolveProfileData(data, checkpointName, baseProfile);
+            setProfileValues(node, profileData);
+        }
+    } finally {
+        node._weirdionApplying = wasApplying;
+    }
 }
 
 app.registerExtension({
@@ -600,6 +679,13 @@ app.registerExtension({
                     if (originalCallback) {
                         originalCallback.apply(this, arguments);
                     }
+                    if (node._weirdionApplying) {
+                        return;
+                    }
+                    node._weirdionProfileDirty = false;
+                    node._weirdionProfileBase = stripUnsaved(
+                        node.widgets?.find((w) => w.name === "profile")?.value || DEFAULT_PROFILE_NAME
+                    );
                     applyProfileFilters(node);
                 };
             }
@@ -612,10 +698,40 @@ app.registerExtension({
                     if (originalProfileCallback) {
                         originalProfileCallback.apply(this, arguments);
                     }
+                    if (node._weirdionApplying) {
+                        return;
+                    }
+                    node._weirdionProfileDirty = false;
+                    node._weirdionProfileBase =
+                        stripUnsaved(profileWidget.value || DEFAULT_PROFILE_NAME) || DEFAULT_PROFILE_NAME;
                     applyProfileFilters(node);
                 };
             }
 
+            PARAM_WIDGET_NAMES.forEach((name) => {
+                const widget = this.widgets?.find((w) => w.name === name);
+                if (!widget) {
+                    return;
+                }
+                const originalCallback = widget.callback;
+                const node = this;
+                widget.callback = function () {
+                    if (originalCallback) {
+                        originalCallback.apply(this, arguments);
+                    }
+                    if (node._weirdionApplying) {
+                        return;
+                    }
+                    node._weirdionProfileDirty = true;
+                    node._weirdionProfileBase = stripUnsaved(
+                        node.widgets?.find((w) => w.name === "profile")?.value || DEFAULT_PROFILE_NAME
+                    );
+                    applyProfileFilters(node);
+                };
+            });
+
+            this._weirdionProfileDirty = false;
+            this._weirdionProfileBase = DEFAULT_PROFILE_NAME;
             applyProfileFilters(this);
             return result;
         };

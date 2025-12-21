@@ -21,7 +21,7 @@ def register_profile_routes() -> None:
     routes = PromptServer.instance.routes
 
     @routes.get("/weirdion/profiles")
-    async def get_profiles(request) -> web.Response:
+    async def get_profiles(request: "web.Request") -> web.Response:
         try:
             default_profile = load_default_profile()
             user_data = load_user_profiles()
@@ -37,7 +37,7 @@ def register_profile_routes() -> None:
             return web.json_response({"error": str(exc)}, status=400)
 
     @routes.post("/weirdion/profiles")
-    async def save_profiles(request) -> web.Response:
+    async def save_profiles(request: "web.Request") -> web.Response:
         try:
             data = await request.json()
             if not isinstance(data, dict):
