@@ -207,7 +207,6 @@
     background: rgba(0, 0, 0, 0.25);
     padding: 8px 10px;
     min-height: 120px;
-    max-height: 120px;
     overflow: hidden;
     color: var(--fg-color, #ddd);
     width: 100%;
@@ -242,7 +241,6 @@
     font-size: 12px;
     line-height: 1.4;
     min-height: 120px;
-    max-height: 120px;
     overflow: auto;
     box-sizing: border-box;
 }

@@ -38,16 +38,20 @@ function configureProfileWidget(node, widget) {
     widget._weirdionConfigured = true;
 }
 
-function setNoteHeight(node) {
+function setNoteHeight(node, height = NOTE_DEFAULT_HEIGHT, syncNodeSize = true) {
     const noteWidget = node?._weirdionNoteWidget;
     const noteEl = noteWidget?.inputEl;
     if (!noteEl || !noteWidget) {
         return;
     }
 
-    noteEl.style.height = `${NOTE_DEFAULT_HEIGHT}px`;
-    noteWidget.computedHeight = NOTE_DEFAULT_HEIGHT;
-    noteWidget.computeSize = () => [node.size[0], NOTE_DEFAULT_HEIGHT];
+    noteEl.style.height = `${height}px`;
+    noteWidget.computedHeight = height;
+    noteWidget.computeSize = () => [node.size[0], height];
+
+    if (!syncNodeSize) {
+        return;
+    }
 
     requestAnimationFrame(() => {
         if (typeof node.setSize === "function") {
@@ -58,6 +62,18 @@ function setNoteHeight(node) {
         }
         app.graph.setDirtyCanvas(true, false);
     });
+}
+
+function updateNoteHeightFromNode(node) {
+    const noteWidget = node?._weirdionNoteWidget;
+    if (!noteWidget) {
+        return;
+    }
+
+    const margin = Number.isFinite(noteWidget.margin) ? noteWidget.margin : 4;
+    const top = (noteWidget.y ?? 0) + margin;
+    const available = Math.max(NOTE_DEFAULT_HEIGHT, node.size[1] - top - margin);
+    setNoteHeight(node, available, false);
 }
 
 function isProfileDirty(node, profileData) {
@@ -908,6 +924,13 @@ app.registerExtension({
             this.onConfigure = function () {
                 const result = originalConfigure?.apply(this, arguments);
                 requestAnimationFrame(() => syncProfileState(this));
+                return result;
+            };
+
+            const originalResize = this.onResize;
+            this.onResize = function () {
+                const result = originalResize?.apply(this, arguments);
+                updateNoteHeightFromNode(this);
                 return result;
             };
             return result;
