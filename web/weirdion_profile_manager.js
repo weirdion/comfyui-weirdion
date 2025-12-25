@@ -424,11 +424,16 @@ class ProfileManagerUI {
         this.overlay.addEventListener("click", () => this.close());
 
         this.modal.addEventListener("click", (event) => {
-            const target = event.target;
+            let target = event.target;
             if (!(target instanceof HTMLElement)) {
                 return;
             }
-            const action = target.getAttribute("data-action");
+            // Find the closest element with data-action (handles clicking on SVG children)
+            const actionElement = target.closest("[data-action]");
+            if (!actionElement) {
+                return;
+            }
+            const action = actionElement.getAttribute("data-action");
             if (!action) {
                 return;
             }
