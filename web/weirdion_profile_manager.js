@@ -325,64 +325,96 @@ class ProfileManagerUI {
     _template() {
         return `
             <div class="weirdion-profile-shell">
-                <div class="weirdion-profile-nav">
-                    <h3>Weirdion</h3>
-                    <div class="nav-item active">Profile Manager</div>
+                <div class="weirdion-profile-header">
+                    <h2>Profile Manager</h2>
+                    <button class="weirdion-close-btn" data-action="close" aria-label="Close" title="Close (Esc)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                 </div>
                 <div class="weirdion-profile-content">
-                    <div class="weirdion-profile-list">
+                    <aside class="weirdion-profile-sidebar">
+                        <div class="weirdion-search-box">
+                            <input type="text" placeholder="Search profiles..." data-role="profile-search" aria-label="Search profiles" />
+                        </div>
                         <div class="weirdion-profile-actions">
-                            <button class="weirdion-button primary" data-action="new">New</button>
-                            <button class="weirdion-button" data-action="save">Save</button>
-                            <button class="weirdion-button" data-action="save-as">Save As</button>
-                            <button class="weirdion-button danger" data-action="delete">Delete</button>
+                            <button class="weirdion-button primary" data-action="new" title="New Profile (Ctrl+N)">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                New
+                            </button>
+                            <button class="weirdion-button" data-action="save" title="Save Profile (Ctrl+S)">Save</button>
                         </div>
-                        <div data-role="profile-list"></div>
-                    </div>
-                    <div>
+                        <div class="weirdion-profile-list" data-role="profile-list"></div>
+                    </aside>
+                    <main class="weirdion-profile-main">
                         <div class="weirdion-profile-form">
-                            <div class="field">
-                                <label>Name</label>
-                                <input type="text" data-field="name" />
+                            <div class="weirdion-form-header">
+                                <h3 data-role="form-title">Profile Settings</h3>
+                                <div class="weirdion-form-actions">
+                                    <button class="weirdion-button-icon" data-action="save-as" title="Save As...">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M13 13H3C2.44772 13 2 12.5523 2 12V4C2 3.44772 2.44772 3 3 3H10L14 7V12C14 12.5523 13.5523 13 13 13Z" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M5 3V7H11" stroke="currentColor" stroke-width="1.5"/>
+                                        </svg>
+                                    </button>
+                                    <button class="weirdion-button-icon danger" data-action="delete" title="Delete Profile">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M3 4H13M5 4V3C5 2.44772 5.44772 2 6 2H10C10.5523 2 11 2.44772 11 3V4M6 7V11M10 7V11M4 4H12V13C12 13.5523 11.5523 14 11 14H5C4.44772 14 4 13.5523 4 13V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="field">
-                                <label>Steps</label>
-                                <input type="number" min="1" data-field="steps" />
+                            <div class="weirdion-form-body">
+                                <div class="field">
+                                    <label for="profile-name">Profile Name</label>
+                                    <input type="text" id="profile-name" data-field="name" required aria-required="true" />
+                                </div>
+                                <div class="field-group">
+                                    <div class="field">
+                                        <label for="profile-steps">Steps</label>
+                                        <input type="number" id="profile-steps" min="1" max="200" data-field="steps" required aria-required="true" />
+                                    </div>
+                                    <div class="field">
+                                        <label for="profile-cfg">CFG Scale</label>
+                                        <input type="number" id="profile-cfg" min="0" max="30" step="0.1" data-field="cfg" required aria-required="true" />
+                                    </div>
+                                    <div class="field">
+                                        <label for="profile-denoise">Denoise</label>
+                                        <input type="number" id="profile-denoise" min="0" max="1" step="0.01" data-field="denoise" required aria-required="true" />
+                                    </div>
+                                    <div class="field">
+                                        <label for="profile-clip-skip">Clip Skip</label>
+                                        <input type="number" id="profile-clip-skip" min="-12" max="12" step="1" data-field="clip_skip" required aria-required="true" />
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <div class="field">
+                                        <label for="profile-sampler">Sampler</label>
+                                        <input type="text" id="profile-sampler" data-field="sampler" placeholder="e.g., euler_ancestral" />
+                                    </div>
+                                    <div class="field">
+                                        <label for="profile-scheduler">Scheduler</label>
+                                        <input type="text" id="profile-scheduler" data-field="scheduler" placeholder="e.g., karras" />
+                                    </div>
+                                </div>
+                                <div class="field field-full">
+                                    <label for="profile-note">Notes</label>
+                                    <textarea id="profile-note" data-field="note" rows="6" placeholder="Add notes about this profile..."></textarea>
+                                </div>
+                                <div class="field field-full">
+                                    <label>Checkpoint Associations</label>
+                                    <div class="weirdion-checkpoint-search">
+                                        <input type="text" placeholder="Search checkpoints..." data-role="checkpoint-search" />
+                                    </div>
+                                    <div class="weirdion-checkpoint-chips" data-role="checkpoint-chips"></div>
+                                </div>
+                                <div class="weirdion-profile-hint" data-role="profile-hint"></div>
                             </div>
-                            <div class="field">
-                                <label>CFG</label>
-                                <input type="number" step="0.1" data-field="cfg" />
-                            </div>
-                            <div class="field">
-                                <label>Sampler</label>
-                                <input type="text" data-field="sampler" />
-                            </div>
-                            <div class="field">
-                                <label>Scheduler</label>
-                                <input type="text" data-field="scheduler" />
-                            </div>
-                            <div class="field">
-                                <label>Denoise</label>
-                                <input type="number" step="0.01" data-field="denoise" />
-                            </div>
-                            <div class="field">
-                                <label>Clip Skip</label>
-                                <input type="number" step="1" data-field="clip_skip" />
-                            </div>
-                            <div class="field" style="grid-column: span 3;">
-                                <label>Note</label>
-                                <textarea data-field="note"></textarea>
-                            </div>
-                            <div class="weirdion-checkpoints">
-                                <label>Checkpoint Associations</label>
-                                <div class="weirdion-checkpoint-chips" data-role="checkpoint-chips"></div>
-                            </div>
-                            <div class="weirdion-profile-note" data-role="profile-hint"></div>
                         </div>
-                    </div>
-                </div>
-                <div class="weirdion-profile-footer">
-                    <button class="weirdion-button" data-action="close">Close</button>
+                    </main>
                 </div>
             </div>
         `;
@@ -390,6 +422,7 @@ class ProfileManagerUI {
 
     _bindEvents() {
         this.overlay.addEventListener("click", () => this.close());
+
         this.modal.addEventListener("click", (event) => {
             const target = event.target;
             if (!(target instanceof HTMLElement)) {
@@ -402,6 +435,38 @@ class ProfileManagerUI {
             event.preventDefault();
             this._handleAction(action);
         });
+
+        // Keyboard shortcuts
+        this.keyHandler = (event) => {
+            if (event.key === "Escape") {
+                this.close();
+                event.preventDefault();
+            } else if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+                event.preventDefault();
+                this._saveProfile(false);
+            } else if ((event.ctrlKey || event.metaKey) && event.key === "n") {
+                event.preventDefault();
+                this._selectProfile("");
+            }
+        };
+
+        // Profile search
+        const profileSearch = this.modal.querySelector('[data-role="profile-search"]');
+        if (profileSearch) {
+            profileSearch.addEventListener("input", (e) => {
+                this.profileSearchQuery = e.target.value.toLowerCase();
+                this._renderProfileList();
+            });
+        }
+
+        // Checkpoint search
+        const checkpointSearch = this.modal.querySelector('[data-role="checkpoint-search"]');
+        if (checkpointSearch) {
+            checkpointSearch.addEventListener("input", (e) => {
+                this.checkpointSearchQuery = e.target.value.toLowerCase();
+                this._renderCheckpointChips();
+            });
+        }
     }
 
     async open() {
@@ -410,10 +475,13 @@ class ProfileManagerUI {
             this.data.profiles = this.data.profiles || {};
             this.data.checkpoint_defaults = this.data.checkpoint_defaults || {};
             this.data.checkpoints = this.data.checkpoints || [];
+            this.profileSearchQuery = "";
+            this.checkpointSearchQuery = "";
             window.weirdionProfileData = this.data;
             this._render();
             this.overlay.classList.add("is-open");
             this.modal.classList.add("is-open");
+            document.addEventListener("keydown", this.keyHandler);
         } catch (error) {
             showToast(error.message || "Failed to open Profile Manager", "error");
         }
@@ -422,6 +490,7 @@ class ProfileManagerUI {
     close() {
         this.overlay.classList.remove("is-open");
         this.modal.classList.remove("is-open");
+        document.removeEventListener("keydown", this.keyHandler);
     }
 
     _handleAction(action) {
@@ -467,13 +536,35 @@ class ProfileManagerUI {
         const profiles = this.data.profiles || {};
         const names = [DEFAULT_PROFILE_NAME, ...Object.keys(profiles).sort()];
 
-        names.forEach((name) => {
+        // Filter by search query
+        const query = this.profileSearchQuery || "";
+        const filtered = names.filter((name) => name.toLowerCase().includes(query));
+
+        if (filtered.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "weirdion-profile-empty";
+            empty.textContent = "No profiles found";
+            listEl.appendChild(empty);
+            return;
+        }
+
+        filtered.forEach((name) => {
             const pill = document.createElement("div");
             pill.className = "weirdion-profile-pill";
             if (name === this.selectedProfile) {
                 pill.classList.add("active");
             }
-            pill.innerHTML = `<span>${name}</span><span class="pill-tag">${name === DEFAULT_PROFILE_NAME ? "default" : "user"}</span>`;
+
+            const nameEl = document.createElement("span");
+            nameEl.className = "profile-name";
+            nameEl.textContent = name;
+
+            const tagEl = document.createElement("span");
+            tagEl.className = "pill-tag";
+            tagEl.textContent = name === DEFAULT_PROFILE_NAME ? "default" : "user";
+
+            pill.appendChild(nameEl);
+            pill.appendChild(tagEl);
             pill.addEventListener("click", () => this._selectProfile(name));
             listEl.appendChild(pill);
         });
@@ -520,7 +611,19 @@ class ProfileManagerUI {
         const allNames = [...new Set([...checkpoints, ...associated])].sort();
         const defaults = this.data.checkpoint_defaults || {};
 
-        allNames.forEach((ckpt) => {
+        // Filter by search query
+        const query = this.checkpointSearchQuery || "";
+        const filtered = allNames.filter((name) => name.toLowerCase().includes(query));
+
+        if (filtered.length === 0 && query) {
+            const empty = document.createElement("div");
+            empty.className = "weirdion-checkpoint-empty";
+            empty.textContent = "No checkpoints found";
+            chipsEl.appendChild(empty);
+            return;
+        }
+
+        filtered.forEach((ckpt) => {
             const chip = document.createElement("span");
             chip.className = "weirdion-chip";
             if (associated.has(ckpt)) {
