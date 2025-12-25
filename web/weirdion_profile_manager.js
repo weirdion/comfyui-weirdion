@@ -10,7 +10,8 @@ const UNSAVED_SUFFIX = " (unsaved)";
 const API_URL = "/weirdion/profiles";
 const CSS_URL = "/extensions/comfyui-weirdion/weirdion_profile_manager.css";
 const PARAM_WIDGET_NAMES = ["steps", "cfg", "sampler", "scheduler", "denoise", "clip_skip"];
-const NOTE_DEFAULT_HEIGHT = 120;
+const NOTE_DEFAULT_HEIGHT = 160;
+const NOTE_MAX_HEIGHT = 160;
 const PROFILE_NODES = ["weirdion_LoadProfileInputParameters", "weirdion_LoadCheckpointWithProfiles"];
 const PROFILE_NODE_INSTANCES = new Set();
 
@@ -46,6 +47,7 @@ function setNoteHeight(node, height = NOTE_DEFAULT_HEIGHT, syncNodeSize = true) 
     }
 
     noteEl.style.height = `${height}px`;
+    noteEl.style.maxHeight = `${height}px`;
     noteWidget.computedHeight = height;
     noteWidget.computeSize = () => [node.size[0], height];
 
@@ -72,7 +74,7 @@ function updateNoteHeightFromNode(node) {
 
     const margin = Number.isFinite(noteWidget.margin) ? noteWidget.margin : 4;
     const top = (noteWidget.y ?? 0) + margin;
-    const available = Math.max(NOTE_DEFAULT_HEIGHT, node.size[1] - top - margin);
+    const available = Math.min(NOTE_MAX_HEIGHT, Math.max(NOTE_DEFAULT_HEIGHT, node.size[1] - top - margin));
     setNoteHeight(node, available, false);
 }
 
