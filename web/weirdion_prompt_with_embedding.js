@@ -6,6 +6,30 @@
 
 import { app } from "../../scripts/app.js";
 
+function insertAtCursor(widget, text) {
+    const inputEl = widget.inputEl;
+    const currentText = inputEl ? inputEl.value : (widget.value || "");
+
+    if (!inputEl || inputEl.selectionStart === undefined || inputEl.selectionEnd === undefined) {
+        const newText = `${currentText}${text}`;
+        widget.value = newText;
+        if (inputEl) {
+            inputEl.value = newText;
+        }
+        return;
+    }
+
+    const start = inputEl.selectionStart;
+    const end = inputEl.selectionEnd;
+    const newText = `${currentText.slice(0, start)}${text}${currentText.slice(end)}`;
+    widget.value = newText;
+    inputEl.value = newText;
+
+    const cursor = start + text.length;
+    inputEl.setSelectionRange(cursor, cursor);
+    inputEl.focus();
+}
+
 app.registerExtension({
     name: "weirdion.PromptWithEmbedding",
 
@@ -27,12 +51,8 @@ app.registerExtension({
                 const originalEmbeddingCallback = embeddingWidget.callback;
                 embeddingWidget.callback = function(value) {
                     if (value && value !== "Insert Embedding") {
-                        const currentText = promptWidget.value || "";
                         const embeddingTag = `embedding:${value}`;
-
-                        const newText = `${currentText}${embeddingTag}`;
-
-                        promptWidget.value = newText;
+                        insertAtCursor(promptWidget, embeddingTag);
                         embeddingWidget.value = "Insert Embedding";
                     }
 

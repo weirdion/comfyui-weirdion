@@ -8,7 +8,7 @@ a consistent structure across all custom nodes.
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
 
-from ..types import ComfyType, InputSpec, NodeOutput
+from ..types import ComfyReturnType, InputSpec, NodeOutput
 
 
 class BaseNode(ABC):
@@ -51,7 +51,7 @@ class BaseNode(ABC):
 
     @classmethod
     @abstractmethod
-    def get_return_types(cls) -> tuple[ComfyType, ...]:
+    def get_return_types(cls) -> tuple[ComfyReturnType, ...]:
         """
         Define the output types for this node.
 

@@ -12,6 +12,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "aiohttp>=3.8.0",
     "pytest>=8.0.0",
     "mypy>=1.8.0",
     "ruff>=0.2.0",
@@ -20,6 +21,7 @@ dev = [
 
 [tool.uv]
 dev-dependencies = [
+    "aiohttp>=3.8.0",
     "pytest>=8.0.0",
     "mypy>=1.8.0",
     "ruff>=0.2.0",

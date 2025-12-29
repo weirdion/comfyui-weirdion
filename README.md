@@ -12,7 +12,7 @@ Here’s the quick rundown. Short and sweet.
 > Load a checkpoint, but let you swap in your own CLIP and/or VAE if you want.
 
 - Inputs: `checkpoint`, optional `opt_clip`, optional `opt_vae`
-- Outputs: `model`, `clip`, `vae`, `model_name`, `clip_skip_value`
+- Outputs: `model`, `clip`, `vae`, `model_name`
 - Notes: if `opt_clip` or `opt_vae` is connected, it overrides what the checkpoint loaded.
 
 <details>
@@ -24,12 +24,36 @@ Here’s the quick rundown. Short and sweet.
 > Same as above, but bakes in clip skip so you can drop the extra node.
 
 - Inputs: `checkpoint`, `clip_skip`, optional `opt_clip`, optional `opt_vae`
-- Outputs: `model`, `clip`, `vae`, `model_name`
+- Outputs: `model`, `clip`, `vae`, `model_name`, `clip_skip_value`
 - Notes: `clip_skip` follows ComfyUI rules (-1 = no skip).
 
 <details>
   <summary>Screenshot</summary>
   <img src="docs/assets/node-load-checkpoint-w-clip-skip.png" alt="Load Checkpoint w/ Clip Skip">
+</details>
+
+### Load Checkpoint w/ Profiles
+> One node to load a checkpoint, apply clip skip, and pull profile parameters.
+
+- Inputs: `checkpoint`, `profile`, `steps`, `cfg`, `sampler`, `scheduler`, `denoise`, `clip_skip`, optional `opt_clip`, optional `opt_vae`
+- Outputs: `model`, `clip`, `vae`, `model_name`, `steps`, `cfg`, `sampler`, `sampler_name`, `scheduler`, `scheduler_name`, `clip_skip`, `denoise`
+- Notes: profile defaults auto-fill inputs, but you can override them per run.
+
+<details>
+  <summary>Screenshot</summary>
+  <img src="docs/assets/node-load-checkpoint-w-profiles.png" alt="Load Checkpoint w/ Profiles">
+</details>
+
+### Load Profile Input Parameters
+> Resolve steps/cfg/sampler/scheduler/denoise/clip skip from a saved profile.
+
+- Inputs: `profile`, `steps`, `cfg`, `sampler`, `scheduler`, `denoise`, `clip_skip`
+- Outputs: `steps`, `cfg`, `sampler`, `sampler_name`, `scheduler`, `scheduler_name`, `clip_skip`, `denoise`
+- Notes: use this when you want profile params without loading a checkpoint.
+
+<details>
+  <summary>Screenshot</summary>
+  <img src="docs/assets/node-load-profile-input-parameters.png" alt="Load Profile Input Parameters">
 </details>
 
 ### Prompt w/ LoRA

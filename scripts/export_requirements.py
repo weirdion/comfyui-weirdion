@@ -1,8 +1,8 @@
 """Export runtime dependencies from pyproject.toml to requirements.txt."""
 
 import pathlib
-import tomllib
 import sys
+import tomllib
 
 
 def main() -> int:

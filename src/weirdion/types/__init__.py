@@ -4,6 +4,7 @@ from .comfy_types import (
     VAE,
     Boolean,
     Clip,
+    ComfyReturnType,
     ComfyType,
     Conditioning,
     ControlNet,
@@ -37,6 +38,7 @@ __all__ = [
     "Float",
     "Boolean",
     "ComfyType",
+    "ComfyReturnType",
     "InputSpec",
     "NodeOutput",
     # Widget configs
