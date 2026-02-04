@@ -1,5 +1,6 @@
 """Simple image saver node with creator metadata support."""
 
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +46,9 @@ class ImageSaverSimpleNode(UtilityNode):
                 ),
                 "lossless_webp": ("BOOLEAN", {"default": True, "tooltip": "Use lossless mode for WEBP output"}),
                 "quality": ("INT", {"default": 100, "min": 1, "max": 100, "tooltip": "JPEG/WEBP quality"}),
+            },
+            "optional": {
+                "seed_value": ("INT", {"default": -1, "tooltip": "Optional seed for %seed filename token"}),
             }
         }
 
@@ -67,6 +71,7 @@ class ImageSaverSimpleNode(UtilityNode):
         extension: str,
         lossless_webp: bool,
         quality: int,
+        seed_value: int | None = None,
     ) -> dict[str, Any]:
         """Save images and return ComfyUI UI/result payload."""
         try:
@@ -88,7 +93,8 @@ class ImageSaverSimpleNode(UtilityNode):
             frame_u8 = (frame * 255).astype(np.uint8)
             image = Image.fromarray(frame_u8)
 
-            target_name = self._next_filename(output_dir, filename.strip() or "image", extension, idx)
+            resolved_filename = self._resolve_filename_tokens(filename.strip() or "image", seed_value)
+            target_name = self._next_filename(output_dir, resolved_filename, extension, idx)
             target_path = output_dir / target_name
             self._save_image(
                 image=image,
@@ -140,6 +146,7 @@ class ImageSaverSimpleNode(UtilityNode):
         extension: str,
         lossless_webp: bool,
         quality: int,
+        seed_value: int | None = None,
     ) -> NodeOutput:
         """BaseNode compatibility: delegate to save()."""
         out = self.save(
@@ -150,8 +157,18 @@ class ImageSaverSimpleNode(UtilityNode):
             extension=extension,
             lossless_webp=lossless_webp,
             quality=quality,
+            seed_value=seed_value,
         )
         return out["result"]
+
+    @staticmethod
+    def _resolve_filename_tokens(filename: str, seed_value: int | None) -> str:
+        """Resolve simple filename tokens used by existing saver flows."""
+        resolved = filename.replace("%time", datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+        if "%seed" in resolved:
+            seed = str(seed_value) if seed_value is not None and seed_value >= 0 else "seed"
+            resolved = resolved.replace("%seed", seed)
+        return resolved
 
     @staticmethod
     def _next_filename(output_dir: Path, filename: str, extension: str, batch_index: int) -> str:

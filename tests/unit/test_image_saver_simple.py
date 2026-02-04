@@ -39,6 +39,8 @@ def test_image_saver_simple_input_spec() -> None:
     assert "extension" in spec["required"]
     assert "lossless_webp" in spec["required"]
     assert "quality" in spec["required"]
+    assert "optional" in spec
+    assert "seed_value" in spec["optional"]
 
 
 def test_image_saver_simple_return_types_and_names() -> None:
@@ -94,3 +96,25 @@ def test_image_saver_simple_process_delegates_to_save(tmp_path, monkeypatch) -> 
 
     assert filenames == ("delegated.webp",)
     assert (tmp_path / "delegated.webp").exists()
+
+
+def test_image_saver_simple_filename_tokens_expand(tmp_path, monkeypatch) -> None:
+    """%time and %seed tokens are resolved before writing."""
+    monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(output_directory=str(tmp_path)))
+    node = ImageSaverSimpleNode()
+    batch = _FakeImageBatch(np.zeros((1, 1, 1, 3), dtype=np.float32))
+
+    out = node.save(
+        images=batch,
+        creator_name="",
+        filename="%time_%seed",
+        path="",
+        extension="png",
+        lossless_webp=True,
+        quality=100,
+        seed_value=12345,
+    )
+    saved_name = out["result"][0]
+    assert "%time" not in saved_name
+    assert "%seed" not in saved_name
+    assert "_12345" in saved_name
