@@ -33,7 +33,7 @@ class ImageSaverSimpleNode(UtilityNode):
                 ),
                 "filename": (
                     "STRING",
-                    {"default": "image", "multiline": False, "tooltip": "Base filename without extension"},
+                    {"default": "%time_%seed", "multiline": False, "tooltip": "Base filename without extension"},
                 ),
                 "path": (
                     "STRING",
@@ -44,7 +44,7 @@ class ImageSaverSimpleNode(UtilityNode):
                     {"tooltip": "Output image format"},
                 ),
                 "lossless_webp": ("BOOLEAN", {"default": True, "tooltip": "Use lossless mode for WEBP output"}),
-                "quality": ("INT", {"default": 95, "min": 1, "max": 100, "tooltip": "JPEG/WEBP quality"}),
+                "quality": ("INT", {"default": 100, "min": 1, "max": 100, "tooltip": "JPEG/WEBP quality"}),
             }
         }
 
@@ -75,7 +75,7 @@ class ImageSaverSimpleNode(UtilityNode):
             raise RuntimeError("ComfyUI runtime dependencies not available") from e
 
         base_output = Path(folder_paths.output_directory)
-        clean_path = path.strip().strip("/\\")
+        clean_path = self._normalize_subfolder(path, base_output)
         output_dir = base_output / clean_path if clean_path else base_output
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -112,6 +112,24 @@ class ImageSaverSimpleNode(UtilityNode):
             "ui": {"images": ui_images},
             "result": (",".join(saved_files),),
         }
+
+    @staticmethod
+    def _normalize_subfolder(path: str, base_output: Path) -> str:
+        """Convert user path input into a safe subfolder under ComfyUI output."""
+        raw = (path or "").strip()
+        if not raw:
+            return ""
+
+        # If caller passed an absolute path inside output/, keep only the relative tail.
+        raw_path = Path(raw)
+        if raw_path.is_absolute():
+            try:
+                return raw_path.relative_to(base_output).as_posix().strip("/\\")
+            except ValueError:
+                # Absolute path outside output/: keep only final folder name to avoid nested /Users/... trees.
+                return raw_path.name.strip("/\\")
+
+        return raw.strip("/\\")
 
     def process(
         self,
