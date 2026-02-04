@@ -13,6 +13,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "aiohttp>=3.8.0",
+    "numpy>=1.26.0",
+    "pillow>=10.0.0",
+    "torch",
     "pytest>=8.0.0",
     "mypy>=1.8.0",
     "ruff>=0.2.0",
@@ -22,6 +25,9 @@ dev = [
 [tool.uv]
 dev-dependencies = [
     "aiohttp>=3.8.0",
+    "numpy>=1.26.0",
+    "pillow>=10.0.0",
+    "torch",
     "pytest>=8.0.0",
     "mypy>=1.8.0",
     "ruff>=0.2.0",
