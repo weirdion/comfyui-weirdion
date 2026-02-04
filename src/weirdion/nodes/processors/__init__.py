@@ -1,3 +1,5 @@
 """Processing nodes for image and latent manipulation."""
 
-__all__: list[str] = []
+from .text_watermark import TextWatermarkNode  # noqa: F401
+
+__all__ = ["TextWatermarkNode"]
