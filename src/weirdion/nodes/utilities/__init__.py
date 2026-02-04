@@ -1,3 +1,5 @@
-"""Utility nodes for data flow and conversions."""
+"""Utility nodes for data flow, conversions, and output helpers."""
 
-__all__: list[str] = []
+from .image_saver_simple import ImageSaverSimpleNode  # noqa: F401
+
+__all__ = ["ImageSaverSimpleNode"]
