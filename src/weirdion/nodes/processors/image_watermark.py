@@ -42,6 +42,7 @@ class ImageWatermarkNode(ProcessingNode):
             },
             "optional": {
                 "opt_watermark_mask": ("MASK", {"tooltip": "Optional alpha mask for watermark image"}),
+                "opt_invert_mask": ("BOOLEAN", {"default": False, "tooltip": "Invert watermark mask values"}),
             },
         }
 
@@ -65,6 +66,7 @@ class ImageWatermarkNode(ProcessingNode):
         alpha: float,
         padding: int,
         opt_watermark_mask: Any | None = None,
+        opt_invert_mask: bool = False,
     ) -> NodeOutput:
         """Apply watermark image to each frame in the batch."""
         if watermark_image is None or float(alpha) <= 0:
@@ -100,6 +102,8 @@ class ImageWatermarkNode(ProcessingNode):
             if mask_np is not None and mask_np.shape[0] > 0:
                 mask_idx = min(idx, mask_np.shape[0] - 1)
                 mask = np.clip(mask_np[mask_idx], 0, 1)
+                if opt_invert_mask:
+                    mask = 1.0 - mask
                 mask_u8 = (mask * 255).astype(np.uint8)
                 mask_img = Image.fromarray(mask_u8).resize((target_w, target_h), Image.Resampling.LANCZOS)
                 wm_alpha = Image.fromarray(

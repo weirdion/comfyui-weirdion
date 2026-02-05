@@ -20,6 +20,7 @@ def test_image_watermark_input_spec() -> None:
 
     assert "optional" in spec
     assert "opt_watermark_mask" in spec["optional"]
+    assert "opt_invert_mask" in spec["optional"]
 
 
 def test_image_watermark_return_types_and_names() -> None:
